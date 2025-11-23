@@ -9,7 +9,7 @@ import router from "../router";
     <div class="mb-6">
       <a href="/" class="flex items-center gap-3">
         <div class="w-10 h-10 rounded-lg flex items-center justify-center">
-          <img src="/src/assets/logo-kuydinas.png" alt="" srcset="" />
+          <img src="../src/assets/logo-kuydinas.png" alt="" srcset="" />
         </div>
         <div>
           <h1 class="text-lg font-semibold">KuyDinas</h1>
