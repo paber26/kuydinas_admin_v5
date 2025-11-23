@@ -6,9 +6,19 @@
       <input
         v-model="q"
         @input="onSearchInput"
+        @keyup.enter="resetAndLoad"
         placeholder="Cari nama / email / username..."
         class="border px-3 py-2 rounded w-full md:w-1/3"
       />
+
+      <!-- explicit search button in case user wants to click -->
+      <button
+        @click="resetAndLoad"
+        class="px-4 py-2 bg-indigo-600 text-white rounded"
+      >
+        Cari
+      </button>
+
       <select
         v-model.number="perPage"
         @change="resetAndLoad"
@@ -48,7 +58,7 @@
       <div
         ref="sentinel"
         class="p-4 text-center text-slate-500"
-        v-if="!users.length && !loading"
+        v-if="(!users || users.length === 0) && !loading"
       >
         Tidak ada data
       </div>
@@ -71,7 +81,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch, computed } from "vue";
+import { ref, onMounted, watch, onUnmounted } from "vue";
 import api from "../services/api.js";
 import debounce from "lodash/debounce"; // jika belum, `npm install lodash`
 
@@ -88,17 +98,46 @@ let observer = null;
 async function fetchPage() {
   loading.value = true;
   try {
-    const res = await api.get("/users", {
+    // call the new backend paginated endpoint
+    const res = await api.get("/getakunv2", {
       params: { page: page.value, per_page: perPage.value, q: q.value },
     });
-    // response is paginator object
-    const payload = res.data;
-    // append data (if page > 1) or replace if page 1
-    if (page.value === 1) users.value = payload.data;
-    else users.value = users.value.concat(payload.data);
 
-    lastPage.value =
-      payload.last_page || Math.ceil((payload.total || 0) / perPage.value);
+    // Laravel paginator shape expected: { current_page, data: [...], last_page, per_page, total }
+    const payload = res.data;
+
+    if (payload && Array.isArray(payload.data)) {
+      // proper paginator response
+      if (page.value === 1) users.value = payload.data;
+      else users.value = users.value.concat(payload.data);
+
+      // prefer last_page if present, otherwise compute from total
+      if (typeof payload.last_page === "number") {
+        lastPage.value = payload.last_page;
+      } else if (typeof payload.total === "number") {
+        lastPage.value = Math.max(1, Math.ceil(payload.total / perPage.value));
+      } else {
+        lastPage.value = Math.max(
+          1,
+          Math.ceil((payload.data || []).length / perPage.value)
+        );
+      }
+    } else if (Array.isArray(payload)) {
+      // Defensive fallback: backend still returns full array. Slice to current page to avoid loading everything into UI.
+      console.warn(
+        "Backend returned full array. Consider updating to paginated endpoint `/getakunv2`. Using client-side slice fallback."
+      );
+      const start = (page.value - 1) * perPage.value;
+      const pageSlice = payload.slice(start, start + perPage.value);
+      if (page.value === 1) users.value = pageSlice;
+      else users.value = users.value.concat(pageSlice);
+      lastPage.value = Math.max(1, Math.ceil(payload.length / perPage.value));
+    } else {
+      // unexpected shape -> empty
+      console.warn("Unexpected payload shape from /getakunv2", payload);
+      if (page.value === 1) users.value = [];
+      lastPage.value = 1;
+    }
   } catch (err) {
     console.error("Gagal ambil users", err);
   } finally {
