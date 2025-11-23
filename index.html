@@ -1,13 +1,27 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="id">
   <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>kuydinas_admin_v5</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>KuyDinas — Admin Dashboard</title>
+    <!-- Tailwind Play CDN (for quick prototyping). For production, build with Tailwind CLI/PostCSS. -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js for charts -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> -->
+    <style>
+      /* small utility to make the layout similar to the reference preview */
+      .sidebar::-webkit-scrollbar {
+        width: 8px;
+      }
+      .sidebar::-webkit-scrollbar-thumb {
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 9999px;
+      }
+    </style>
   </head>
-  <body>
+  <body class="bg-slate-50 text-slate-800">
     <div id="app"></div>
+
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>
