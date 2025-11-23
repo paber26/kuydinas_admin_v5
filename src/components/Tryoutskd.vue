@@ -108,10 +108,10 @@
               class="border-t hover:bg-slate-50"
             >
               <td class="py-4 px-6">{{ idx + 1 + (page - 1) * perPage }}</td>
-              <td class="py-4 px-6 font-medium">{{ item.name }}</td>
-              <td class="py-4 px-6">{{ item.registrants }}</td>
-              <td class="py-4 px-6">{{ item.duration }}</td>
-              <td class="py-4 px-6">{{ item.price }}</td>
+              <td class="py-4 px-6 font-medium">{{ item.title }}</td>
+              <td class="py-4 px-6">{{ item.pendaftar }}</td>
+              <td class="py-4 px-6">{{ item.time }}</td>
+              <td class="py-4 px-6">{{ item.harga }}</td>
               <td class="py-4 px-6">
                 <span
                   :class="[
@@ -238,248 +238,40 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
+import api from "../services/api";
+import { useRouter } from "vue-router";
 
 // Dummy data — replace with API later
-const data = ref([
-  {
-    id: "1",
-    name: "TRYOUT SKD 2024 BATCH 9",
-    registrants: 1024,
-    duration: "100 menit",
-    price: 100,
-    status: "enabled",
-  },
-  {
-    id: "2",
-    name: "TRYOUT SKD 2024 BATCH 10",
-    registrants: 980,
-    duration: "100 menit",
-    price: 100,
-    status: "enabled",
-  },
-  {
-    id: "3",
-    name: "TRYOUT SKD 2024 BATCH 11",
-    registrants: 512,
-    duration: "100 menit",
-    price: 100,
-    status: "enabled",
-  },
-  {
-    id: "4",
-    name: "TRYOUT SKD 2024 BATCH 12",
-    registrants: 300,
-    duration: "100 menit",
-    price: 100,
-    status: "disabled",
-  },
-  {
-    id: "5",
-    name: "TRYOUT SKD 2024 BATCH 1",
-    registrants: 250,
-    duration: "100 menit",
-    price: 100,
-    status: "enabled",
-  },
-  {
-    id: "6",
-    name: "TRYOUT SKD 2024 BATCH 2",
-    registrants: 200,
-    duration: "100 menit",
-    price: 100,
-    status: "enabled",
-  },
-  {
-    id: "7",
-    name: "TRYOUT SKD 2024 BATCH 3",
-    registrants: 150,
-    duration: "100 menit",
-    price: 100,
-    status: "enabled",
-  },
-  {
-    id: "8",
-    name: "TRYOUT SKD 2024 BATCH 4",
-    registrants: 120,
-    duration: "100 menit",
-    price: 100,
-    status: "enabled",
-  },
-  {
-    id: "8",
-    name: "TRYOUT SKD 2024 BATCH 4",
-    registrants: 120,
-    duration: "100 menit",
-    price: 100,
-    status: "enabled",
-  },
-  {
-    id: "8",
-    name: "TRYOUT SKD 2024 BATCH 4",
-    registrants: 120,
-    duration: "100 menit",
-    price: 100,
-    status: "enabled",
-  },
-  {
-    id: "8",
-    name: "TRYOUT SKD 2024 BATCH 4",
-    registrants: 120,
-    duration: "100 menit",
-    price: 100,
-    status: "enabled",
-  },
-  {
-    id: "8",
-    name: "TRYOUT SKD 2024 BATCH 4",
-    registrants: 120,
-    duration: "100 menit",
-    price: 100,
-    status: "enabled",
-  },
-  {
-    id: "8",
-    name: "TRYOUT SKD 2024 BATCH 4",
-    registrants: 120,
-    duration: "100 menit",
-    price: 100,
-    status: "enabled",
-  },
-  {
-    id: "8",
-    name: "TRYOUT SKD 2024 BATCH 4",
-    registrants: 120,
-    duration: "100 menit",
-    price: 100,
-    status: "enabled",
-  },
-  {
-    id: "8",
-    name: "TRYOUT SKD 2024 BATCH 4",
-    registrants: 120,
-    duration: "100 menit",
-    price: 100,
-    status: "enabled",
-  },
-  {
-    id: "8",
-    name: "TRYOUT SKD 2024 BATCH 4",
-    registrants: 120,
-    duration: "100 menit",
-    price: 100,
-    status: "enabled",
-  },
-  {
-    id: "8",
-    name: "TRYOUT SKD 2024 BATCH 4",
-    registrants: 120,
-    duration: "100 menit",
-    price: 100,
-    status: "enabled",
-  },
-  {
-    id: "8",
-    name: "TRYOUT SKD 2024 BATCH 4",
-    registrants: 120,
-    duration: "100 menit",
-    price: 100,
-    status: "enabled",
-  },
-  {
-    id: "8",
-    name: "TRYOUT SKD 2024 BATCH 4",
-    registrants: 120,
-    duration: "100 menit",
-    price: 100,
-    status: "enabled",
-  },
-  {
-    id: "8",
-    name: "TRYOUT SKD 2024 BATCH 4",
-    registrants: 120,
-    duration: "100 menit",
-    price: 100,
-    status: "enabled",
-  },
-  {
-    id: "8",
-    name: "TRYOUT SKD 2024 BATCH 4",
-    registrants: 120,
-    duration: "100 menit",
-    price: 100,
-    status: "enabled",
-  },
-  {
-    id: "8",
-    name: "TRYOUT SKD 2024 BATCH 4",
-    registrants: 120,
-    duration: "100 menit",
-    price: 100,
-    status: "enabled",
-  },
-  {
-    id: "8",
-    name: "TRYOUT SKD 2024 BATCH 4",
-    registrants: 120,
-    duration: "100 menit",
-    price: 100,
-    status: "enabled",
-  },
-  {
-    id: "8",
-    name: "TRYOUT SKD 2024 BATCH 4",
-    registrants: 120,
-    duration: "100 menit",
-    price: 100,
-    status: "enabled",
-  },
-  {
-    id: "8",
-    name: "TRYOUT SKD 2024 BATCH 4",
-    registrants: 120,
-    duration: "100 menit",
-    price: 100,
-    status: "enabled",
-  },
-  {
-    id: "8",
-    name: "TRYOUT SKD 2024 BATCH 4",
-    registrants: 120,
-    duration: "100 menit",
-    price: 100,
-    status: "enabled",
-  },
-  {
-    id: "8",
-    name: "TRYOUT SKD 2024 BATCH 4",
-    registrants: 120,
-    duration: "100 menit",
-    price: 100,
-    status: "enabled",
-  },
-  {
-    id: "8",
-    name: "TRYOUT SKD 2024 BATCH 4",
-    registrants: 120,
-    duration: "100 menit",
-    price: 100,
-    status: "enabled",
-  },
-  {
-    id: "8",
-    name: "TRYOUT SKD 2024 BATCH 4",
-    registrants: 120,
-    duration: "100 menit",
-    price: 100,
-    status: "enabled",
-  },
-  // add more sample items if needed
-]);
+const data = ref([]);
+
+async function fetchTryouts() {
+  try {
+    // backend route: GET /tryoutskd (adjust if your backend uses a different path)
+    const res = await api.get("/tryoutskd");
+    // handle common response shapes: array or { data: [...] }
+    if (Array.isArray(res.data)) {
+      data.value = res.data;
+    } else if (res.data && Array.isArray(res.data.data)) {
+      data.value = res.data.data;
+    } else {
+      // fallback: if API returns single object or other structure, try to use it directly
+      data.value = res.data;
+    }
+    console.log("Tryouts loaded:", data.value);
+  } catch (err) {
+    console.error("Gagal memuat tryouts:", err);
+  }
+}
+
+onMounted(() => {
+  fetchTryouts();
+});
+const router = useRouter();
 
 const filters = ref({ id: "all", status: "all", q: "" });
 
-const perPage = ref(8);
+const perPage = ref(20);
 const page = ref(1);
 
 const filtered = computed(() => {
@@ -523,7 +315,7 @@ function onAdd() {
 }
 
 function onView(item) {
-  alert("Lihat " + item.name);
+  router.push(`/tryoutskd/lihat/${item.eid}`);
 }
 
 function onEdit(item) {

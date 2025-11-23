@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import router from "../router";
+import { useRoute } from "vue-router";
+const route = useRoute();
 </script>
 
 <template>
@@ -21,7 +23,12 @@ import router from "../router";
     <nav class="space-y-1">
       <router-link
         to="/"
-        class="flex items-center gap-3 p-2 rounded-lg text-slate-700 hover:bg-slate-50"
+        :class="[
+          'flex items-center gap-3 p-2 rounded-lg',
+          route.path === '/'
+            ? 'bg-purple-100 text-purple-600'
+            : 'text-slate-700 hover:bg-slate-50',
+        ]"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -41,7 +48,12 @@ import router from "../router";
       </router-link>
       <router-link
         to="/tryoutskd"
-        class="flex items-center gap-3 p-2 rounded-lg text-slate-700 hover:bg-slate-50"
+        :class="[
+          'flex items-center gap-3 p-2 rounded-lg',
+          route.path.startsWith('/tryoutskd')
+            ? 'bg-purple-100 text-purple-600'
+            : 'text-slate-700 hover:bg-slate-50',
+        ]"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -60,8 +72,13 @@ import router from "../router";
         <span>Try Out SKD CPNS</span>
       </router-link>
       <router-link
-        to="/akun"
-        class="flex items-center gap-3 p-2 rounded-lg text-slate-700 hover:bg-slate-50"
+        to="/daftarakun"
+        :class="[
+          'flex items-center gap-3 p-2 rounded-lg',
+          route.path.startsWith('/daftarakun')
+            ? 'bg-purple-100 text-purple-600'
+            : 'text-slate-700 hover:bg-slate-50',
+        ]"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -77,11 +94,16 @@ import router from "../router";
             d="M3 10h2l1 9h12l1-9h2M16 3v4M8 3v4"
           />
         </svg>
-        <span>Akun</span>
+        <span>Daftar Akun</span>
       </router-link>
       <router-link
         to="/materiskd"
-        class="flex items-center gap-3 p-2 rounded-lg text-slate-700 hover:bg-slate-50"
+        :class="[
+          'flex items-center gap-3 p-2 rounded-lg',
+          route.path.startsWith('/materiskd')
+            ? 'bg-purple-100 text-purple-600'
+            : 'text-slate-700 hover:bg-slate-50',
+        ]"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -99,9 +121,14 @@ import router from "../router";
         </svg>
         <span>Materi SKD</span>
       </router-link>
-      <a
-        class="flex items-center gap-3 p-2 rounded-lg text-slate-700 hover:bg-slate-50"
-        href="#"
+      <router-link
+        to="/axiostest"
+        :class="[
+          'flex items-center gap-3 p-2 rounded-lg',
+          route.path.startsWith('/axiostest')
+            ? 'bg-purple-100 text-purple-600'
+            : 'text-slate-700 hover:bg-slate-50',
+        ]"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -117,8 +144,8 @@ import router from "../router";
             d="M12 4v16m8-8H4"
           />
         </svg>
-        <span>Settings</span>
-      </a>
+        <span>Axios Test</span>
+      </router-link>
     </nav>
 
     <div class="mt-6 pt-4 border-t border-slate-100">
