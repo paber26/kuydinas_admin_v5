@@ -19,6 +19,31 @@
         Cari
       </button>
 
+      <!-- Koin filter: min / max -->
+      <div class="flex items-center gap-2">
+        <input
+          v-model.number="minKoin"
+          type="number"
+          min="0"
+          placeholder="Min Koin"
+          class="border px-2 py-2 rounded w-24 text-sm"
+        />
+        <span class="text-sm text-slate-500">—</span>
+        <input
+          v-model.number="maxKoin"
+          type="number"
+          min="0"
+          placeholder="Max Koin"
+          class="border px-2 py-2 rounded w-24 text-sm"
+        />
+        <button
+          @click="resetAndLoad"
+          class="px-3 py-2 bg-green-600 text-white rounded text-sm"
+        >
+          Filter Koin
+        </button>
+      </div>
+
       <select
         v-model.number="perPage"
         @change="resetAndLoad"
@@ -33,11 +58,14 @@
 
     <div class="bg-white rounded shadow divide-y">
       <div
-        v-for="user in users"
+        v-for="(user, index) in users"
         :key="user.id"
         class="p-4 flex items-center justify-between"
       >
         <div class="flex items-center gap-4">
+          <div class="w-6 text-slate-500 text-sm">
+            {{ (page - 1) * perPage + index + 1 }}.
+          </div>
           <img
             v-if="user.picture"
             :src="user.picture"
@@ -48,6 +76,10 @@
             <div class="font-medium text-slate-800">{{ user.name }}</div>
             <div class="text-sm text-slate-500">
               {{ user.email }} • {{ user.username }}
+              <div class="text-sm text-slate-500">
+                HP:
+                {{ user.nowa ?? "-" }}
+              </div>
             </div>
           </div>
         </div>
@@ -91,6 +123,8 @@ const perPage = ref(20);
 const lastPage = ref(1);
 const loading = ref(false);
 const q = ref("");
+const minKoin = ref(null);
+const maxKoin = ref(null);
 
 const sentinel = ref(null);
 let observer = null;
@@ -98,20 +132,33 @@ let observer = null;
 async function fetchPage() {
   loading.value = true;
   try {
-    // call the new backend paginated endpoint
-    const res = await api.get("/getakunv2", {
-      params: { page: page.value, per_page: perPage.value, q: q.value },
-    });
+    // build params dynamically so we only send koin filters when set
+    const params = {
+      page: page.value,
+      per_page: perPage.value,
+      q: q.value,
+    };
+    if (
+      minKoin.value !== null &&
+      minKoin.value !== undefined &&
+      minKoin.value !== ""
+    )
+      params.min_koin = minKoin.value;
+    if (
+      maxKoin.value !== null &&
+      maxKoin.value !== undefined &&
+      maxKoin.value !== ""
+    )
+      params.max_koin = maxKoin.value;
 
-    // Laravel paginator shape expected: { current_page, data: [...], last_page, per_page, total }
+    const res = await api.get("/getakunv2", { params });
+
     const payload = res.data;
 
     if (payload && Array.isArray(payload.data)) {
-      // proper paginator response
       if (page.value === 1) users.value = payload.data;
       else users.value = users.value.concat(payload.data);
 
-      // prefer last_page if present, otherwise compute from total
       if (typeof payload.last_page === "number") {
         lastPage.value = payload.last_page;
       } else if (typeof payload.total === "number") {
@@ -123,7 +170,6 @@ async function fetchPage() {
         );
       }
     } else if (Array.isArray(payload)) {
-      // Defensive fallback: backend still returns full array. Slice to current page to avoid loading everything into UI.
       console.warn(
         "Backend returned full array. Consider updating to paginated endpoint `/getakunv2`. Using client-side slice fallback."
       );
@@ -133,7 +179,6 @@ async function fetchPage() {
       else users.value = users.value.concat(pageSlice);
       lastPage.value = Math.max(1, Math.ceil(payload.length / perPage.value));
     } else {
-      // unexpected shape -> empty
       console.warn("Unexpected payload shape from /getakunv2", payload);
       if (page.value === 1) users.value = [];
       lastPage.value = 1;
