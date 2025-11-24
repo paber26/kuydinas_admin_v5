@@ -319,7 +319,7 @@ function onView(item) {
 }
 
 function onEdit(item) {
-  alert("Edit " + item.name);
+  router.push(`/tryoutskd/edit/${item.eid}`);
 }
 
 function onDelete(item) {
