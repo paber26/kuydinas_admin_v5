@@ -127,7 +127,7 @@
             <tr class="border-t">
               <td class="py-3 flex items-center gap-3">
                 <img
-                  src="../mnt/data/ADCD5DD8-A0A1-4C40-A2D9-63D9E2449E55.jpeg"
+                  src="/src/assets/logo-kuydinas.png"
                   alt="avatar Robert Clinton"
                   class="w-9 h-9 rounded-full"
                 />
@@ -142,6 +142,18 @@
             </tr>
           </tbody>
         </table>
+      </div>
+    </section>
+    <!-- Section: Grafik Pendaftar per Bulan -->
+    <section
+      class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 mb-6"
+    >
+      <h3 class="font-semibold mb-1">Jumlah Pendaftar Tryout per Bulan</h3>
+      <p class="text-xs text-slate-400 mb-4">
+        Berdasarkan tanggal pendaftaran (created_at).
+      </p>
+      <div class="w-full h-72">
+        <canvas ref="monthlyChartRef"></canvas>
       </div>
     </section>
 
@@ -218,10 +230,32 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import api from "../services/api";
+import {
+  Chart,
+  LineController,
+  LineElement,
+  PointElement,
+  LinearScale,
+  CategoryScale,
+  Tooltip,
+} from "chart.js";
 
+// registrasi komponen dasar Chart.js
+Chart.register(
+  LineController,
+  LineElement,
+  PointElement,
+  LinearScale,
+  CategoryScale,
+  Tooltip
+);
+
+// =========================
+// 1. DATA TABEL PROVINSI (SAMA SEPERTI SEBELUMNYA)
+// =========================
 const provinsiStats = ref([]);
 
-const sortBy = ref("provinsi"); // or 'jumlah'
+const sortBy = ref("provinsi"); // atau 'jumlah'
 const sortDir = ref("asc");
 
 function sortData(key) {
@@ -248,14 +282,151 @@ function sortData(key) {
   });
 }
 
+// =========================
+// 2. DATA & GRAFIK PENDAFTAR PER BULAN
+// =========================
+const monthlyChartRef = ref(null);
+const monthlyData = ref([]);
+let monthlyChart = null;
+
+// plugin sederhana: label angka di atas tiap titik
+const valueLabelPlugin = {
+  id: "valueLabel",
+  afterDatasetsDraw(chart) {
+    const { ctx } = chart;
+    const meta = chart.getDatasetMeta(0);
+    const data = chart.data.datasets[0].data || [];
+
+    ctx.save();
+    meta.data.forEach((point, index) => {
+      const value = data[index];
+      if (value == null) return;
+
+      const label = value.toString();
+      ctx.font =
+        "10px system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+      const textWidth = ctx.measureText(label).width;
+      const boxWidth = textWidth + 12;
+      const boxHeight = 18;
+      const radius = 4;
+
+      const x = point.x;
+      const y = point.y - 16;
+      const left = x - boxWidth / 2;
+      const top = y - boxHeight / 2;
+      const right = left + boxWidth;
+      const bottom = top + boxHeight;
+
+      // kotak ungu kecil
+      ctx.fillStyle = "#6366f1";
+      ctx.beginPath();
+      ctx.moveTo(left + radius, top);
+      ctx.lineTo(right - radius, top);
+      ctx.quadraticCurveTo(right, top, right, top + radius);
+      ctx.lineTo(right, bottom - radius);
+      ctx.quadraticCurveTo(right, bottom, right - radius, bottom);
+      ctx.lineTo(left + radius, bottom);
+      ctx.quadraticCurveTo(left, bottom, left, bottom - radius);
+      ctx.lineTo(left, top + radius);
+      ctx.quadraticCurveTo(left, top, left + radius, top);
+      ctx.closePath();
+      ctx.fill();
+
+      // teks nilai
+      ctx.fillStyle = "#ffffff";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(label, x, y);
+    });
+    ctx.restore();
+  },
+};
+
+Chart.register(valueLabelPlugin);
+
+function buildMonthlyChart() {
+  const canvas = monthlyChartRef.value;
+  if (!canvas || !monthlyData.value.length) return;
+
+  // Ambil hanya 12 bulan terakhir (data diasumsikan sudah terurut dari backend)
+  const lastRows = monthlyData.value.slice(-12);
+
+  const labels = lastRows.map(
+    (row) => row.bulan_label || row.bulan || row.month_label || row.month || ""
+  );
+
+  const values = lastRows.map((row) =>
+    Number(row.total || row.jumlah || row.count || 0)
+  );
+
+  if (monthlyChart) {
+    monthlyChart.data.labels = labels;
+    monthlyChart.data.datasets[0].data = values;
+    monthlyChart.update();
+    return;
+  }
+
+  monthlyChart = new Chart(canvas.getContext("2d"), {
+    type: "line",
+    data: {
+      labels,
+      datasets: [
+        {
+          label: "Pendaftar",
+          data: values,
+          borderColor: "#6366f1",
+          backgroundColor: "rgba(129, 140, 248, 0.15)",
+          tension: 0.3,
+          pointRadius: 4,
+          pointBackgroundColor: "#6366f1",
+          pointBorderWidth: 0,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+      },
+      scales: {
+        x: { grid: { display: false } },
+        y: {
+          beginAtZero: true,
+          ticks: {
+            callback: (value) => {
+              try {
+                return Number(value).toLocaleString();
+              } catch {
+                return value;
+              }
+            },
+          },
+        },
+      },
+    },
+  });
+}
+
+// =========================
+// 3. FETCH DATA DARI API
+// =========================
 onMounted(async () => {
   try {
-    const resp = await api.get("/getakunperprovinsi");
-    provinsiStats.value = resp.data || [];
+    const [provRes, bulanRes] = await Promise.all([
+      api.get("/getakunperprovinsi"),
+      api.get("/getpendaftarperbulan"), // <- pastikan endpoint ini ada
+    ]);
+
+    // tabel provinsi (tetap)
+    provinsiStats.value = provRes.data || [];
     sortData(sortBy.value);
-  } catch (e) {
-    console.error("Error fetch provinsi:", e);
-    provinsiStats.value = [];
+
+    // grafik bulanan
+    monthlyData.value = bulanRes.data || [];
+    buildMonthlyChart();
+  } catch (err) {
+    console.error("Error dashboard:", err);
   }
 });
 </script>
