@@ -210,7 +210,6 @@
 </template>
 
 <script>
-import axios from "axios";
 import api from "../services/api.js";
 
 let uid = 1;
@@ -255,7 +254,6 @@ export default {
       try {
         this.loading = true;
         // Endpoint mirrors tryoutskdlihat route in backend
-        // const resp = await axios.get(`/tryoutskd/lihat/${eid}`);
         const res = await api.get(`/tryoutskd/info/${eid}`);
         const data = res.data;
         // const data = resp.data || resp;
@@ -292,6 +290,7 @@ export default {
           this.questions = fullSoal.map((s) => {
             const q = createEmptyQuestion();
             q.id = s.id ?? s.soal_no ?? s.no ?? uid++;
+            q.qid = s.qid ?? s.q_id ?? s.quiz_id ?? null;
             q.prompt = s.question || s.pertanyaan || s.prompt || "";
 
             // build options from option_a..option_e (fallback to options array)
@@ -377,6 +376,7 @@ export default {
           this.questions = qs.map((s) => {
             const q = createEmptyQuestion();
             q.id = s.id ?? s.no ?? uid++;
+            q.qid = s.qid ?? s.q_id ?? s.quiz_id ?? null;
             q.prompt = s.prompt || s.pertanyaan || s.question || "";
 
             // normalize options and points
@@ -423,11 +423,18 @@ export default {
     async save() {
       if (!this.meta.title) return alert("Judul Tryout wajib diisi");
 
-      // prepare payload
+      // prepare payload (include eid so backend knows which tryout to update)
       const payload = {
+        eid:
+          this.meta.code ||
+          this.meta.eid ||
+          this.$route?.params?.eid ||
+          this.$route?.query?.eid ||
+          null,
         meta: this.meta,
         questions: this.questions.map((q) => ({
           id: q.id,
+          qid: q.qid ?? null,
           prompt: q.prompt,
           options: q.options,
           points: q.points,
@@ -438,8 +445,16 @@ export default {
 
       try {
         this.loading = true;
-        // backend route for saving edits
-        const resp = await axios.post("/tryoutskd/edit/simpan", payload);
+        // debug: show full payload
+        console.log("[save] Sending payload:", payload);
+
+        // send request
+        const resp = await api.post("/tryoutskd/edit", payload);
+
+        // debug: show raw response
+        console.log("[save] response:", resp);
+        console.log("[save] response.data:", resp && resp.data);
+
         // handle response
         if (
           resp &&
@@ -447,7 +462,6 @@ export default {
           (resp.data.success || resp.data.status === "ok")
         ) {
           alert("Perubahan berhasil disimpan");
-          // optionally redirect back to view
           this.$router
             .push({
               name: "TryoutSKDLihat",
@@ -455,11 +469,35 @@ export default {
             })
             .catch(() => {});
         } else {
-          alert("Simpan selesai, periksa respon server");
+          // show server-provided message if present
+          const msg =
+            (resp && resp.data && (resp.data.message || resp.data.error)) ||
+            "Simpan selesai, periksa respon server";
+          console.warn("[save] non-ok response:", resp && resp.data);
+          alert(msg);
         }
       } catch (err) {
-        console.error("save error", err);
-        alert("Gagal menyimpan. Cek console.");
+        // detailed error logging
+        console.error("[save] error", err);
+        // axios error with response
+        if (err && err.response) {
+          console.error("[save] error response status:", err.response.status);
+          console.error("[save] error response data:", err.response.data);
+          const serverMsg =
+            err.response.data &&
+            (err.response.data.message ||
+              err.response.data.error ||
+              JSON.stringify(err.response.data));
+          alert(`Gagal menyimpan: ${serverMsg || err.message}`);
+        } else if (err && err.request) {
+          // request was made but no response
+          console.error("[save] no response received", err.request);
+          alert(
+            "Gagal menyimpan: tidak ada respon dari server (network/CORS). Cek console network."
+          );
+        } else {
+          alert(`Gagal menyimpan: ${err.message}`);
+        }
       } finally {
         this.loading = false;
       }
