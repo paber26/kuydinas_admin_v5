@@ -150,8 +150,16 @@
                 opt.isCorrect ? 'bg-emerald-50 border-emerald-200' : 'bg-white'
               "
             >
-              <div class="font-medium text-slate-800">
-                {{ opt.key }}. <span class="font-normal">{{ opt.text }}</span>
+              <div class="flex items-center justify-between">
+                <div>
+                  <span class="font-medium text-slate-800">{{ opt.key }}.</span>
+                  <span class="font-normal text-slate-800">
+                    {{ opt.text }}</span
+                  >
+                </div>
+                <div class="text-sm text-slate-500">
+                  Poin: {{ opt.point ?? 0 }}
+                </div>
               </div>
             </div>
           </div>
@@ -170,6 +178,12 @@
         Tidak ada soal untuk tryout ini.
       </div>
     </div>
+    <button
+      @click="scrollToTop"
+      class="fixed bottom-6 right-6 bg-indigo-600 text-white px-4 py-3 rounded-full shadow-lg hover:bg-indigo-700 transition"
+    >
+      ↑
+    </button>
   </section>
 </template>
 
@@ -239,10 +253,18 @@ async function fetchDetail() {
         labels.forEach((lbl, idx) => {
           const optId = row[`optionid_${lbl}`];
           const optText = row[`option_${lbl}`];
+          // try several possible point column names
+          const optPoint =
+            row[`point_${lbl}`] ??
+            row[`poin_${lbl}`] ??
+            row[`points_${lbl}`] ??
+            0;
           if (optText != null) {
             opts.push({
               key: String.fromCharCode(65 + idx),
               text: optText,
+              point:
+                typeof optPoint === "number" ? optPoint : Number(optPoint) || 0,
               isCorrect:
                 optId && correct ? String(optId) === String(correct) : false,
             });
@@ -264,10 +286,17 @@ async function fetchDetail() {
         const opts = (q.options || q.choices || []).map((o, i) => {
           const key = o.key ?? String.fromCharCode(65 + i);
           const text = o.text ?? o.label ?? o.option ?? o;
+          const point = o.point ?? o.poin ?? o.score ?? o.points ?? null;
           const isCorrect =
             o.isCorrect ||
             (q.ans ? o.optionid === q.ans || key === q.ans : false);
-          return { key, text, isCorrect };
+          return {
+            key,
+            text,
+            point:
+              typeof point === "number" ? point : point ? Number(point) : 0,
+            isCorrect,
+          };
         });
         return {
           id: q.id ?? q.qid ?? Math.random().toString(36).slice(2, 9),
@@ -282,6 +311,7 @@ async function fetchDetail() {
         const opts = (q.options || []).map((o, i) => ({
           key: o.key ?? String.fromCharCode(65 + i),
           text: o.text ?? o.option ?? o,
+          point: o.point ?? o.poin ?? o.score ?? 0,
           isCorrect: !!o.isCorrect,
         }));
         return {
@@ -317,6 +347,10 @@ function goBack() {
 
 function printPage() {
   window.print();
+}
+
+function scrollToTop() {
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 onMounted(() => {

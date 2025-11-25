@@ -151,7 +151,7 @@
                   class="input flex-1"
                   :placeholder="`Isi opsi ${optionLabel(i)}`"
                 />
-                <div class="w-24 flex-shrink-0 text-right">
+                <div class="w-24 text-right">
                   <label class="text-xs text-gray-500 block text-right"
                     >Poin</label
                   >
@@ -256,8 +256,6 @@ export default {
         // Endpoint mirrors tryoutskdlihat route in backend
         const res = await api.get(`/tryoutskd/info/${eid}`);
         const data = res.data;
-        // const data = resp.data || resp;
-        console.log("loadTryout data", data);
 
         // Try multiple possible response shapes
         const payload = data.data || data.payload || data.tryout || data;
@@ -285,7 +283,6 @@ export default {
         const soalRes = await api.get(`/tryoutskd/lihat/${eid}`);
 
         const fullSoal = soalRes.data || [];
-        console.log("Full soal data:", fullSoal);
         if (Array.isArray(fullSoal) && fullSoal.length) {
           this.questions = fullSoal.map((s) => {
             const q = createEmptyQuestion();
@@ -445,15 +442,8 @@ export default {
 
       try {
         this.loading = true;
-        // debug: show full payload
-        console.log("[save] Sending payload:", payload);
-
         // send request
         const resp = await api.post("/tryoutskd/edit", payload);
-
-        // debug: show raw response
-        console.log("[save] response:", resp);
-        console.log("[save] response.data:", resp && resp.data);
 
         // handle response
         if (
@@ -462,12 +452,20 @@ export default {
           (resp.data.success || resp.data.status === "ok")
         ) {
           alert("Perubahan berhasil disimpan");
-          this.$router
-            .push({
-              name: "TryoutSKDLihat",
-              params: { eid: this.meta.code || "" },
-            })
-            .catch(() => {});
+          // navigate to view page — ensure we use the correct eid source
+          const targetEid =
+            this.meta.code ||
+            this.meta.eid ||
+            this.$route?.params?.eid ||
+            this.$route?.query?.eid ||
+            null;
+          // this.$router
+          //   .push({
+          //     name: "Tryoutskdlihat",
+          //     params: { eid: targetEid || "" },
+          //   })
+
+          this.$router.push(`/tryoutskd/lihat/${targetEid}`).catch(() => {});
         } else {
           // show server-provided message if present
           const msg =
