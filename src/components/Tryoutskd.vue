@@ -29,19 +29,6 @@
 
           <div class="flex gap-3 items-center w-full md:w-auto">
             <label class="flex items-center gap-2 text-slate-600">
-              <span class="text-sm">ID:</span>
-              <select
-                v-model="filters.id"
-                class="border rounded px-3 py-2 text-sm"
-              >
-                <option value="all">All</option>
-                <option v-for="id in uniqueIds" :key="id" :value="id">
-                  {{ id }}
-                </option>
-              </select>
-            </label>
-
-            <label class="flex items-center gap-2 text-slate-600">
               <span class="text-sm">Status:</span>
               <select
                 v-model="filters.status"
@@ -269,26 +256,36 @@ onMounted(() => {
 });
 const router = useRouter();
 
-const filters = ref({ id: "all", status: "all", q: "" });
+const filters = ref({ status: "all", q: "" });
 
 const perPage = ref(20);
 const page = ref(1);
 
 const filtered = computed(() => {
-  const q = filters.value.q.trim().toLowerCase();
+  const q = (filters.value.q || "").toString().trim().toLowerCase();
   return data.value.filter((d) => {
-    if (filters.value.id !== "all" && d.id !== filters.value.id) return false;
+    // filter by status
     if (filters.value.status !== "all" && d.status !== filters.value.status)
       return false;
-    if (
-      q &&
-      !(
-        `${d.name}`.toLowerCase().includes(q) ||
-        `${d.registrants}`.toLowerCase().includes(q)
-      )
-    )
-      return false;
-    return true;
+
+    // if no query, include the row
+    if (!q) return true;
+
+    // check common fields shown in the table
+    const title = (d.title || d.name || "").toString().toLowerCase();
+    const pendaftar = (d.pendaftar ?? d.registrants ?? d.participants ?? "")
+      .toString()
+      .toLowerCase();
+    const time = (d.time ?? d.duration ?? "").toString().toLowerCase();
+    const harga = (d.harga ?? d.price ?? "").toString().toLowerCase();
+
+    // match if any contains the query
+    if (title.includes(q)) return true;
+    if (pendaftar.includes(q)) return true;
+    if (time.includes(q)) return true;
+    if (harga.includes(q)) return true;
+
+    return false;
   });
 });
 
@@ -299,10 +296,6 @@ const pageCount = computed(() =>
 const pagedData = computed(() => {
   const start = (page.value - 1) * perPage.value;
   return filtered.value.slice(start, start + perPage.value);
-});
-
-const uniqueIds = computed(() => {
-  return Array.from(new Set(data.value.map((d) => d.id)));
 });
 
 function onSearch() {

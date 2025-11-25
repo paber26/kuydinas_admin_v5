@@ -75,7 +75,7 @@
           <div>
             <div class="font-medium text-slate-800">{{ user.name }}</div>
             <div class="text-sm text-slate-500">
-              {{ user.email }} • {{ user.username }}
+              {{ user.email }}
               <div class="text-sm text-slate-500">
                 HP:
                 {{ user.nowa ?? "-" }}

@@ -108,26 +108,6 @@
       </div>
     </section>
 
-    <!-- Section: Kuis Terakhir -->
-    <section
-      class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 mb-6"
-    >
-      <h3 class="font-semibold mb-3">Kuis Terakhir Dikerjakan</h3>
-      <div class="flex items-center justify-between">
-        <div>
-          <div class="text-sm text-slate-500">Nama Kuis</div>
-          <div class="text-lg font-semibold">Tes Pengetahuan Umum 2025</div>
-          <div class="text-xs text-slate-400 mt-1">
-            Dikerjakan: 20 November 2025
-          </div>
-        </div>
-        <div class="text-right">
-          <div class="text-sm text-slate-500">Nilai</div>
-          <div class="text-3xl font-bold text-indigo-600">87</div>
-        </div>
-      </div>
-    </section>
-
     <!-- Section: Sedang Mengerjakan -->
     <section
       class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 mb-6"
@@ -165,74 +145,67 @@
       </div>
     </section>
 
-    <!-- Table / Management -->
-    <section class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
+    <!-- Section: Asal Provinsi Peserta -->
+    <section
+      class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 mt-6"
+    >
       <div class="flex items-center justify-between mb-4">
-        <h3 class="font-semibold">Manajemen Tryout Terbaru</h3>
-        <div class="flex items-center gap-2">
-          <button class="px-3 py-2 bg-indigo-600 text-white rounded-lg text-sm">
-            Buat Tryout
-          </button>
-          <button class="px-3 py-2 border rounded-lg text-sm">Impor CSV</button>
-        </div>
+        <h3 class="font-semibold">Asal Provinsi Peserta</h3>
+        <p class="text-xs text-slate-400">
+          Ringkasan jumlah peserta yang mendaftar berdasarkan provinsi asal.
+        </p>
       </div>
 
       <div class="overflow-x-auto">
         <table class="w-full text-sm">
-          <thead class="text-slate-500 text-xs text-left">
+          <thead class="text-slate-500 text-xs text-left bg-slate-50">
             <tr>
-              <th class="py-3 pr-6">#</th>
-              <th class="py-3 pr-6">Nama Tryout</th>
-              <th class="py-3 pr-6">Tanggal</th>
-              <th class="py-3 pr-6">Peserta</th>
-              <th class="py-3 pr-6">Status</th>
-              <th class="py-3 pr-6">Aksi</th>
+              <th
+                class="py-3 pr-6 text-center cursor-pointer select-none"
+                @click="sortData('provinsi')"
+              >
+                Provinsi
+                <span v-if="sortBy === 'provinsi'">
+                  {{ sortDir === "asc" ? "▲" : "▼" }}
+                </span>
+              </th>
+
+              <th
+                class="py-3 pr-6 text-center cursor-pointer select-none"
+                @click="sortData('jumlah')"
+              >
+                Jumlah Peserta
+                <span v-if="sortBy === 'jumlah'">
+                  {{ sortDir === "asc" ? "▲" : "▼" }}
+                </span>
+              </th>
             </tr>
           </thead>
-          <tbody class="text-slate-700">
-            <tr class="border-t">
-              <td class="py-3">1</td>
-              <td class="py-3">Tryout SKD CPNS 2026</td>
-              <td class="py-3">2026-01-12</td>
-              <td class="py-3">1,024</td>
-              <td class="py-3">
-                <span
-                  class="px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs"
-                  >Publik</span
-                >
+          <tbody class="text-slate-700 bg-white">
+            <tr
+              v-for="row in provinsiStats"
+              :key="row.kode || row.nama || row.provinsi"
+              class="border-t"
+            >
+              <td class="py-3 text-center">
+                {{ row.nama || row.provinsi || "-" }}
               </td>
-              <td class="py-3">
-                <button class="text-sm text-indigo-600">Kelola</button>
-              </td>
-            </tr>
-            <tr class="border-t">
-              <td class="py-3">2</td>
-              <td class="py-3">Tryout Seleksi Sekolah Kedinasan</td>
-              <td class="py-3">2025-12-05</td>
-              <td class="py-3">432</td>
-              <td class="py-3">
-                <span
-                  class="px-2 py-1 rounded-full bg-yellow-100 text-yellow-700 text-xs"
-                  >Draft</span
-                >
-              </td>
-              <td class="py-3">
-                <button class="text-sm text-indigo-600">Kelola</button>
+              <td class="py-3 text-center font-medium">
+                {{
+                  row.jumlah?.toLocaleString?.() ||
+                  row.total?.toLocaleString?.() ||
+                  row.count?.toLocaleString?.() ||
+                  row.jumlah ||
+                  row.total ||
+                  row.count ||
+                  0
+                }}
               </td>
             </tr>
-            <tr class="border-t">
-              <td class="py-3">3</td>
-              <td class="py-3">Tryout Materi Tes Bahasa</td>
-              <td class="py-3">2025-11-10</td>
-              <td class="py-3">88</td>
-              <td class="py-3">
-                <span
-                  class="px-2 py-1 rounded-full bg-pink-100 text-pink-700 text-xs"
-                  >Selesai</span
-                >
-              </td>
-              <td class="py-3">
-                <button class="text-sm text-indigo-600">Kelola</button>
+            <tr v-if="!provinsiStats.length">
+              <td class="py-3 text-xs text-slate-400" colspan="2">
+                Belum ada data provinsi. Silakan hubungkan ke API peserta atau
+                isi data secara manual di variabel <code>provinsiStats</code>.
               </td>
             </tr>
           </tbody>
@@ -241,3 +214,48 @@
     </section>
   </main>
 </template>
+
+<script setup>
+import { ref, onMounted } from "vue";
+import api from "../services/api";
+
+const provinsiStats = ref([]);
+
+const sortBy = ref("provinsi"); // or 'jumlah'
+const sortDir = ref("asc");
+
+function sortData(key) {
+  if (sortBy.value === key) {
+    sortDir.value = sortDir.value === "asc" ? "desc" : "asc";
+  } else {
+    sortBy.value = key;
+    sortDir.value = "asc";
+  }
+
+  provinsiStats.value = [...provinsiStats.value].sort((a, b) => {
+    const valA =
+      key === "provinsi"
+        ? (a.nama || a.provinsi || "").toString().toLowerCase()
+        : Number(a.jumlah || a.total || a.count || 0);
+    const valB =
+      key === "provinsi"
+        ? (b.nama || b.provinsi || "").toString().toLowerCase()
+        : Number(b.jumlah || b.total || b.count || 0);
+
+    if (valA < valB) return sortDir.value === "asc" ? -1 : 1;
+    if (valA > valB) return sortDir.value === "asc" ? 1 : -1;
+    return 0;
+  });
+}
+
+onMounted(async () => {
+  try {
+    const resp = await api.get("/getakunperprovinsi");
+    provinsiStats.value = resp.data || [];
+    sortData(sortBy.value);
+  } catch (e) {
+    console.error("Error fetch provinsi:", e);
+    provinsiStats.value = [];
+  }
+});
+</script>

@@ -1,7 +1,21 @@
 <script setup lang="ts">
 import router from "../router";
 import { useRoute } from "vue-router";
+import { watch } from "vue";
+
 const route = useRoute();
+
+// Ketika route berubah, hapus kelas sidebar-open (nutup sidebar di mobile)
+watch(
+  () => route.fullPath,
+  () => {
+    try {
+      document.body.classList.remove("sidebar-open");
+    } catch (e) {
+      // abaikan kalau document tidak tersedia
+    }
+  }
+);
 </script>
 
 <template>
@@ -11,7 +25,7 @@ const route = useRoute();
     <div class="mb-6">
       <a href="/" class="flex items-center gap-3">
         <div class="w-10 h-10 rounded-lg flex items-center justify-center">
-          <img src="../src/assets/logo-kuydinas.png" alt="" srcset="" />
+          <img src="/src/assets/logo-kuydinas.png" alt="" srcset="" />
         </div>
         <div>
           <h1 class="text-lg font-semibold">KuyDinas</h1>
@@ -154,3 +168,29 @@ const route = useRoute();
     </div>
   </aside>
 </template>
+
+<style>
+/* Basic transition for slide-in feel */
+.sidebar {
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+/* Mobile behaviour: sidebar controlled by body.sidebar-open (set from App.vue) */
+@media (max-width: 767px) {
+  /* default: hidden on mobile */
+  body:not(.sidebar-open) .sidebar {
+    display: none;
+  }
+
+  /* when sidebar-open is active, force show sidebar and position it */
+  body.sidebar-open .sidebar {
+    display: block !important;
+    position: fixed;
+    inset: 0 auto 0 0; /* top:0, right:auto, bottom:0, left:0 */
+    z-index: 40;
+    max-width: 18rem; /* 72 tailwind width */
+    box-shadow: 0 10px 25px rgba(15, 23, 42, 0.18); /* soft shadow */
+    background-color: #ffffff;
+  }
+}
+</style>
