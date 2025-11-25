@@ -245,7 +245,6 @@ async function fetchTryouts() {
       // fallback: if API returns single object or other structure, try to use it directly
       data.value = res.data;
     }
-    console.log("Tryouts loaded:", data.value);
   } catch (err) {
     console.error("Gagal memuat tryouts:", err);
   }
