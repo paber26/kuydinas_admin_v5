@@ -7,7 +7,7 @@
         <div class="flex items-center justify-between">
           <div>
             <div class="text-xs text-slate-400">Pengguna Aktif</div>
-            <div class="text-2xl font-semibold">1,248</div>
+            <div class="text-2xl font-semibold">{{ totalAkunFormatted }}</div>
           </div>
           <div class="p-2 bg-emerald-100 rounded-lg">
             <svg
@@ -228,7 +228,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import api from "../services/api";
 import {
   Chart,
@@ -253,6 +253,10 @@ Chart.register(
 // =========================
 // 1. DATA TABEL PROVINSI (SAMA SEPERTI SEBELUMNYA)
 // =========================
+const totalAkun = ref(0);
+const totalAkunFormatted = computed(() =>
+  totalAkun.value.toLocaleString("id-ID")
+);
 const provinsiStats = ref([]);
 
 const sortBy = ref("provinsi"); // atau 'jumlah'
@@ -413,10 +417,16 @@ function buildMonthlyChart() {
 // =========================
 onMounted(async () => {
   try {
-    const [provRes, bulanRes] = await Promise.all([
+    const [totalRes, provRes, bulanRes] = await Promise.all([
+      api.get("/gettotalakun"),
       api.get("/getakunperprovinsi"),
       api.get("/getpendaftarperbulan"), // <- pastikan endpoint ini ada
     ]);
+
+    // total pengguna aktif
+    const rawTotal = totalRes?.data;
+    // console.log("Raw total akun:", totalRes?.data);
+    totalAkun.value = Number(rawTotal) || 0;
 
     // tabel provinsi (tetap)
     provinsiStats.value = provRes.data || [];
