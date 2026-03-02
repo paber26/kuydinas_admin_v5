@@ -1,27 +1,25 @@
 <script setup lang="ts">
-import router from "../router";
-import { useRoute } from "vue-router";
-import { watch } from "vue";
+import router from "../router"
+import { useRoute } from "vue-router"
+import { watch } from "vue"
 
-const route = useRoute();
+const route = useRoute()
 
 // Ketika route berubah, hapus kelas sidebar-open (nutup sidebar di mobile)
 watch(
   () => route.fullPath,
   () => {
     try {
-      document.body.classList.remove("sidebar-open");
+      document.body.classList.remove("sidebar-open")
     } catch (e) {
       // abaikan kalau document tidak tersedia
     }
   }
-);
+)
 </script>
 
 <template>
-  <aside
-    class="sidebar w-72 bg-white border-r border-slate-200 p-4 hidden md:block"
-  >
+  <aside class="sidebar w-72 bg-white border-r border-slate-200 p-4 hidden md:block">
     <div class="mb-6">
       <a href="/" class="flex items-center gap-3">
         <div class="w-10 h-10 rounded-lg flex items-center justify-center">
@@ -39,24 +37,11 @@ watch(
         to="/"
         :class="[
           'flex items-center gap-3 p-2 rounded-lg',
-          route.path === '/'
-            ? 'bg-purple-100 text-purple-600'
-            : 'text-slate-700 hover:bg-slate-50',
+          route.path === '/' ? 'bg-purple-100 text-purple-600' : 'text-slate-700 hover:bg-slate-50'
         ]"
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          class="h-5 w-5"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M3 7h18M3 12h18M3 17h18"
-          />
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7h18M3 12h18M3 17h18" />
         </svg>
         <span>Dashboard</span>
       </router-link>
@@ -64,18 +49,10 @@ watch(
         to="/tryoutskd"
         :class="[
           'flex items-center gap-3 p-2 rounded-lg',
-          route.path.startsWith('/tryoutskd')
-            ? 'bg-purple-100 text-purple-600'
-            : 'text-slate-700 hover:bg-slate-50',
+          route.path.startsWith('/tryoutskd') ? 'bg-purple-100 text-purple-600' : 'text-slate-700 hover:bg-slate-50'
         ]"
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          class="h-5 w-5"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path
             stroke-linecap="round"
             stroke-linejoin="round"
@@ -89,24 +66,11 @@ watch(
         to="/daftarakun"
         :class="[
           'flex items-center gap-3 p-2 rounded-lg',
-          route.path.startsWith('/daftarakun')
-            ? 'bg-purple-100 text-purple-600'
-            : 'text-slate-700 hover:bg-slate-50',
+          route.path.startsWith('/daftarakun') ? 'bg-purple-100 text-purple-600' : 'text-slate-700 hover:bg-slate-50'
         ]"
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          class="h-5 w-5"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M3 10h2l1 9h12l1-9h2M16 3v4M8 3v4"
-          />
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h2l1 9h12l1-9h2M16 3v4M8 3v4" />
         </svg>
         <span>Daftar Akun</span>
       </router-link>
@@ -114,49 +78,54 @@ watch(
         to="/materiskd"
         :class="[
           'flex items-center gap-3 p-2 rounded-lg',
-          route.path.startsWith('/materiskd')
-            ? 'bg-purple-100 text-purple-600'
-            : 'text-slate-700 hover:bg-slate-50',
+          route.path.startsWith('/materiskd') ? 'bg-purple-100 text-purple-600' : 'text-slate-700 hover:bg-slate-50'
         ]"
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          class="h-5 w-5"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-        >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3" />
+        </svg>
+        <span>Materi SKD</span>
+      </router-link>
+      <router-link
+        to="/banksoal"
+        :class="[
+          'flex items-center gap-3 p-2 rounded-lg',
+          route.path.startsWith('/banksoal') ? 'bg-purple-100 text-purple-600' : 'text-slate-700 hover:bg-slate-50'
+        ]"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v12M6 12h12" />
+        </svg>
+        <span>Bank Soal SKD</span>
+      </router-link>
+      <router-link
+        to="/tryout-builder"
+        :class="[
+          'flex items-center gap-3 p-2 rounded-lg',
+          route.path.startsWith('/tryout-builder')
+            ? 'bg-purple-100 text-purple-600'
+            : 'text-slate-700 hover:bg-slate-50'
+        ]"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path
             stroke-linecap="round"
             stroke-linejoin="round"
             stroke-width="2"
-            d="M12 8v4l3 3"
+            d="M9 5h6M9 9h6M9 13h6M9 17h6M5 5h.01M5 9h.01M5 13h.01M5 17h.01"
           />
         </svg>
-        <span>Materi SKD</span>
+        <span>Buat Tryout (Bank Soal)</span>
       </router-link>
       <router-link
         to="/axiostest"
         :class="[
           'flex items-center gap-3 p-2 rounded-lg',
-          route.path.startsWith('/axiostest')
-            ? 'bg-purple-100 text-purple-600'
-            : 'text-slate-700 hover:bg-slate-50',
+          route.path.startsWith('/axiostest') ? 'bg-purple-100 text-purple-600' : 'text-slate-700 hover:bg-slate-50'
         ]"
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          class="h-5 w-5"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M12 4v16m8-8H4"
-          />
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
         </svg>
         <span>Axios Test</span>
       </router-link>
@@ -172,7 +141,9 @@ watch(
 <style>
 /* Basic transition for slide-in feel */
 .sidebar {
-  transition: transform 0.2s ease, opacity 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease;
 }
 
 /* Mobile behaviour: sidebar controlled by body.sidebar-open (set from App.vue) */

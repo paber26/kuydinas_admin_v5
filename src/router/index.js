@@ -1,14 +1,19 @@
-import { createRouter, createWebHistory } from "vue-router";
+import { createRouter, createWebHistory } from "vue-router"
 
 // Import halaman yang mau dipakai
-import Dashboard from "../components/Dashboard.vue";
-import Sidebar from "../components/Sidebar.vue";
-import Tryoutskd from "../components/Tryoutskd.vue";
-import DaftarAkun from "../components/Daftarakun.vue";
-import Materiskd from "../components/Materiskd.vue";
-import Axiostest from "../components/Axiostest.vue";
-import Tryoutskdlihat from "../components/Tryoutskdlihat.vue";
-import Tryoutskdedit from "../components/Tryoutskdedit.vue";
+import Dashboard from "../components/Dashboard.vue"
+import Sidebar from "../components/Sidebar.vue"
+import Tryoutskd from "../components/Tryoutskd.vue"
+import DaftarAkun from "../components/Daftarakun.vue"
+import Materiskd from "../components/Materiskd.vue"
+import Axiostest from "../components/Axiostest.vue"
+import Tryoutskdlihat from "../components/Tryoutskdlihat.vue"
+import Tryoutskdedit from "../components/Tryoutskdedit.vue"
+import BankSoal from "../components/BankSoal.vue"
+import BankSoalCreate from "../components/BankSoalCreate.vue"
+import TryoutBuilder from "../components/TryoutBuilder.vue"
+import TryoutCreate from "../components/TryoutCreate.vue"
+import TryoutManage from "../components/TryoutManage.vue"
 
 // Daftar route
 const routes = [
@@ -20,12 +25,17 @@ const routes = [
   { path: "/axiostest", component: Axiostest },
   { path: "/tryoutskd/lihat/:eid", component: Tryoutskdlihat },
   { path: "/tryoutskd/edit/:eid", component: Tryoutskdedit },
-];
+  { path: "/banksoal", component: BankSoal },
+  { path: "/banksoal/create", component: BankSoalCreate },
+  { path: "/tryout-builder", component: TryoutBuilder },
+  { path: "/tryout-builder/create", component: TryoutCreate },
+  { path: "/tryout-builder/:id", component: TryoutManage }
+]
 
 // Buat router
 const router = createRouter({
   history: createWebHistory(),
-  routes,
-});
+  routes
+})
 
-export default router;
+export default router
