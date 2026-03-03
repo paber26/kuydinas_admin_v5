@@ -226,7 +226,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
-import api from "../services/api";
+import api from "../../services/api";
 import { useRouter } from "vue-router";
 
 // Dummy data — replace with API later
@@ -289,7 +289,7 @@ const filtered = computed(() => {
 });
 
 const pageCount = computed(() =>
-  Math.max(1, Math.ceil(filtered.value.length / perPage.value))
+  Math.max(1, Math.ceil(filtered.value.length / perPage.value)),
 );
 
 const pagedData = computed(() => {

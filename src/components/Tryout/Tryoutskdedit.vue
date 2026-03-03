@@ -210,7 +210,7 @@
 </template>
 
 <script>
-import api from "../services/api.js";
+import api from "../../services/api.js";
 
 let uid = 1;
 function createEmptyQuestion() {
@@ -297,7 +297,7 @@ export default {
             const optD = s.option_d ?? s.opsi_d ?? null;
             const optE = s.option_e ?? s.opsi_e ?? null;
             const builtOptions = [optA, optB, optC, optD, optE].map((o) =>
-              o == null ? "" : String(o)
+              o == null ? "" : String(o),
             );
 
             // if API provided an array-style options field, prefer that when non-empty
@@ -330,7 +330,7 @@ export default {
             const pD = s.point_d ?? s.poin_d ?? s.points_d ?? null;
             const pE = s.point_e ?? s.poin_e ?? s.points_e ?? null;
             const builtPoints = [pA, pB, pC, pD, pE].map((v) =>
-              typeof v === "number" ? v : v ? Number(v) : 0
+              typeof v === "number" ? v : v ? Number(v) : 0,
             );
             q.points = builtPoints;
 
@@ -340,7 +340,7 @@ export default {
             let answerLetter = "";
             if (correctId) {
               const idx = optionIds.findIndex(
-                (id) => id && String(id) === String(correctId)
+                (id) => id && String(id) === String(correctId),
               );
               if (idx >= 0) answerLetter = ["A", "B", "C", "D", "E"][idx];
               // also handle case where correctId already is a letter
@@ -491,7 +491,7 @@ export default {
           // request was made but no response
           console.error("[save] no response received", err.request);
           alert(
-            "Gagal menyimpan: tidak ada respon dari server (network/CORS). Cek console network."
+            "Gagal menyimpan: tidak ada respon dari server (network/CORS). Cek console network.",
           );
         } else {
           alert(`Gagal menyimpan: ${err.message}`);
