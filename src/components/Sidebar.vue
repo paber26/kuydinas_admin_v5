@@ -1,167 +1,119 @@
 <script setup lang="ts">
-import router from "../router"
-import { useRoute } from "vue-router"
-import { watch } from "vue"
+import { useRoute, useRouter } from "vue-router";
+import { watch } from "vue";
 
-const route = useRoute()
+import {
+  Home,
+  FileText,
+  Users,
+  Book,
+  Database,
+  Layers,
+  Zap,
+} from "lucide-vue-next";
 
-// Ketika route berubah, hapus kelas sidebar-open (nutup sidebar di mobile)
+const route = useRoute();
+const router = useRouter();
+
+const icons: any = {
+  home: Home,
+  document: FileText,
+  users: Users,
+  book: Book,
+  database: Database,
+  layers: Layers,
+  zap: Zap,
+};
+
+const menus = [
+  { name: "Dashboard", path: "/", icon: "home" },
+  { name: "Try Out SKD CPNS", path: "/tryoutskd", icon: "document" },
+  { name: "Daftar Akun", path: "/daftarakun", icon: "users" },
+  { name: "Materi SKD", path: "/materiskd", icon: "book" },
+  { name: "Bank Soal SKD", path: "/banksoal", icon: "database" },
+  { name: "Buat Tryout", path: "/tryout-builder", icon: "layers" },
+  { name: "Axios Test", path: "/axiostest", icon: "zap" },
+];
+
+// Tutup sidebar mobile ketika route berubah
 watch(
   () => route.fullPath,
   () => {
-    try {
-      document.body.classList.remove("sidebar-open")
-    } catch (e) {
-      // abaikan kalau document tidak tersedia
-    }
-  }
-)
+    document.body.classList.remove("sidebar-open");
+  },
+);
+
+const logout = () => {
+  localStorage.removeItem("token");
+  router.push("/login");
+};
 </script>
 
 <template>
-  <aside class="sidebar w-72 bg-white border-r border-slate-200 p-4 hidden md:block">
-    <div class="mb-6">
-      <a href="/" class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-lg flex items-center justify-center">
-          <img src="/src/assets/logo-kuydinas.png" alt="" srcset="" />
-        </div>
-        <div>
-          <h1 class="text-lg font-semibold">KuyDinas</h1>
-          <p class="text-sm text-slate-500">Admin Panel</p>
-        </div>
-      </a>
+  <aside class="sidebar w-72 bg-white border-r border-slate-200 flex flex-col">
+    <!-- Logo -->
+    <div class="p-5 border-b border-slate-100 flex items-center gap-3">
+      <img src="/src/assets/logo-kuydinas.png" class="w-10 h-10" />
+
+      <div>
+        <h1 class="text-lg font-semibold text-slate-800">KuyDinas</h1>
+
+        <p class="text-xs text-slate-500">Admin Panel</p>
+      </div>
     </div>
 
-    <nav class="space-y-1">
+    <!-- Menu -->
+    <nav class="flex-1 p-3 space-y-1">
       <router-link
-        to="/"
-        :class="[
-          'flex items-center gap-3 p-2 rounded-lg',
-          route.path === '/' ? 'bg-purple-100 text-purple-600' : 'text-slate-700 hover:bg-slate-50'
-        ]"
+        v-for="menu in menus"
+        :key="menu.path"
+        :to="menu.path"
+        class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition"
+        active-class="bg-purple-100 text-purple-600"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7h18M3 12h18M3 17h18" />
-        </svg>
-        <span>Dashboard</span>
-      </router-link>
-      <router-link
-        to="/tryoutskd"
-        :class="[
-          'flex items-center gap-3 p-2 rounded-lg',
-          route.path.startsWith('/tryoutskd') ? 'bg-purple-100 text-purple-600' : 'text-slate-700 hover:bg-slate-50'
-        ]"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M9 17v-6a2 2 0 012-2h2a2 2 0 012 2v6M9 7h6"
-          />
-        </svg>
-        <span>Try Out SKD CPNS</span>
-      </router-link>
-      <router-link
-        to="/daftarakun"
-        :class="[
-          'flex items-center gap-3 p-2 rounded-lg',
-          route.path.startsWith('/daftarakun') ? 'bg-purple-100 text-purple-600' : 'text-slate-700 hover:bg-slate-50'
-        ]"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h2l1 9h12l1-9h2M16 3v4M8 3v4" />
-        </svg>
-        <span>Daftar Akun</span>
-      </router-link>
-      <router-link
-        to="/materiskd"
-        :class="[
-          'flex items-center gap-3 p-2 rounded-lg',
-          route.path.startsWith('/materiskd') ? 'bg-purple-100 text-purple-600' : 'text-slate-700 hover:bg-slate-50'
-        ]"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3" />
-        </svg>
-        <span>Materi SKD</span>
-      </router-link>
-      <router-link
-        to="/banksoal"
-        :class="[
-          'flex items-center gap-3 p-2 rounded-lg',
-          route.path.startsWith('/banksoal') ? 'bg-purple-100 text-purple-600' : 'text-slate-700 hover:bg-slate-50'
-        ]"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v12M6 12h12" />
-        </svg>
-        <span>Bank Soal SKD</span>
-      </router-link>
-      <router-link
-        to="/tryout-builder"
-        :class="[
-          'flex items-center gap-3 p-2 rounded-lg',
-          route.path.startsWith('/tryout-builder')
-            ? 'bg-purple-100 text-purple-600'
-            : 'text-slate-700 hover:bg-slate-50'
-        ]"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M9 5h6M9 9h6M9 13h6M9 17h6M5 5h.01M5 9h.01M5 13h.01M5 17h.01"
-          />
-        </svg>
-        <span>Buat Tryout (Bank Soal)</span>
-      </router-link>
-      <router-link
-        to="/axiostest"
-        :class="[
-          'flex items-center gap-3 p-2 rounded-lg',
-          route.path.startsWith('/axiostest') ? 'bg-purple-100 text-purple-600' : 'text-slate-700 hover:bg-slate-50'
-        ]"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-        </svg>
-        <span>Axios Test</span>
+        <!-- icon -->
+        <component :is="icons[menu.icon]" class="w-5 h-5" />
+
+        <span>
+          {{ menu.name }}
+        </span>
       </router-link>
     </nav>
 
-    <div class="mt-6 pt-4 border-t border-slate-100">
-      <div class="text-xs text-slate-400">Versi</div>
-      <div class="text-sm font-medium">1.0.0</div>
+    <!-- Footer -->
+    <div class="p-4 border-t border-slate-100">
+      <button
+        @click="logout"
+        class="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg text-red-500 hover:bg-red-50 transition"
+      >
+        Logout
+      </button>
+
+      <div class="mt-3 text-xs text-slate-400">Versi 1.0.0</div>
     </div>
   </aside>
 </template>
 
 <style>
-/* Basic transition for slide-in feel */
 .sidebar {
-  transition:
-    transform 0.2s ease,
-    opacity 0.2s ease;
+  transition: transform 0.25s ease;
 }
 
-/* Mobile behaviour: sidebar controlled by body.sidebar-open (set from App.vue) */
-@media (max-width: 767px) {
-  /* default: hidden on mobile */
+/* mobile sidebar */
+@media (max-width: 768px) {
   body:not(.sidebar-open) .sidebar {
     display: none;
   }
 
-  /* when sidebar-open is active, force show sidebar and position it */
   body.sidebar-open .sidebar {
-    display: block !important;
+    display: block;
     position: fixed;
-    inset: 0 auto 0 0; /* top:0, right:auto, bottom:0, left:0 */
-    z-index: 40;
-    max-width: 18rem; /* 72 tailwind width */
-    box-shadow: 0 10px 25px rgba(15, 23, 42, 0.18); /* soft shadow */
-    background-color: #ffffff;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 50;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    background: white;
   }
 }
 </style>
