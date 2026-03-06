@@ -89,9 +89,8 @@
 
           <div
             class="border rounded-2xl px-8 py-6 bg-slate-50 text-slate-800 leading-relaxed text-[16px]"
-          >
-            {{ soal.question }}
-          </div>
+            v-html="renderLatex(soal.question)"
+          ></div>
         </div>
 
         <!-- ================= OPSI JAWABAN ================= -->
@@ -118,9 +117,10 @@
               {{ option.label }}
             </div>
 
-            <div class="flex-1 text-slate-800 text-sm leading-relaxed">
-              {{ option.text }}
-            </div>
+            <div
+              class="flex-1 text-slate-800 text-sm leading-relaxed"
+              v-html="renderLatex(option.text)"
+            ></div>
 
             <!-- TWK / TIU -->
             <div
@@ -152,9 +152,8 @@
 
           <div
             class="border border-indigo-100 rounded-2xl px-8 py-6 bg-indigo-50 text-slate-800 text-sm leading-relaxed"
-          >
-            {{ soal.explanation }}
-          </div>
+            v-html="renderLatex(soal.explanation)"
+          ></div>
         </div>
       </div>
 
@@ -175,6 +174,8 @@
 
 <script setup>
 import { computed } from "vue";
+import katex from "katex";
+import "katex/dist/katex.min.css";
 
 const props = defineProps({
   modelValue: Boolean,
@@ -195,4 +196,16 @@ const maxScore = computed(() => {
 
   return Math.max(...scores);
 });
+
+function renderLatex(text) {
+  if (!text) return "";
+
+  return text.replace(/\$(.*?)\$/g, (_, formula) => {
+    try {
+      return katex.renderToString(formula, { throwOnError: false });
+    } catch {
+      return formula;
+    }
+  });
+}
 </script>

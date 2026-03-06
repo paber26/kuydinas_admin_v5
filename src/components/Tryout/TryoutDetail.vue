@@ -98,9 +98,10 @@
           </div>
 
           <!-- Pertanyaan -->
-          <div class="text-sm text-slate-800 whitespace-pre-line mb-4">
-            {{ soal.question }}
-          </div>
+          <div
+            class="text-sm text-slate-800 whitespace-pre-line mb-4"
+            v-html="renderLatex(soal.question)"
+          ></div>
 
           <!-- Opsi Jawaban -->
           <div v-if="soal.options" class="space-y-2 mb-4">
@@ -111,7 +112,10 @@
             >
               <div class="flex gap-2 flex-1">
                 <span class="font-semibold">{{ opt.label }}.</span>
-                <span class="whitespace-pre-line">{{ opt.text }}</span>
+                <span
+                  class="whitespace-pre-line"
+                  v-html="renderLatex(opt.text)"
+                ></span>
               </div>
               <div class="flex items-center gap-2">
                 <!-- skor untuk TKP -->
@@ -155,9 +159,10 @@
           <!-- Pembahasan -->
           <div v-if="soal.explanation" class="border-t pt-4 mt-4">
             <p class="text-xs text-slate-500 mb-1">Pembahasan</p>
-            <div class="text-sm text-slate-700 whitespace-pre-line">
-              {{ soal.explanation }}
-            </div>
+            <div
+              class="text-sm text-slate-700 whitespace-pre-line"
+              v-html="renderLatex(soal.explanation)"
+            ></div>
           </div>
         </div>
       </div>
@@ -299,6 +304,8 @@
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
+import katex from "katex";
+import "katex/dist/katex.min.css";
 import { useRoute } from "vue-router";
 import api from "../../services/api";
 
@@ -371,6 +378,18 @@ async function updateSoal() {
   await api.put(`/soal/${selectedSoal.value.id}`, selectedSoal.value);
   fetchTryout();
   showEditModal.value = false;
+}
+
+function renderLatex(text) {
+  if (!text) return "";
+
+  return text.replace(/\$(.*?)\$/g, (_, formula) => {
+    try {
+      return katex.renderToString(formula, { throwOnError: false });
+    } catch {
+      return formula;
+    }
+  });
 }
 
 onMounted(fetchTryout);

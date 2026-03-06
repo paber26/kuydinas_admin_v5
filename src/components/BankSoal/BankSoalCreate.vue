@@ -59,6 +59,11 @@
           class="w-full mt-2 border rounded-lg px-3 py-2 text-sm"
           placeholder="Masukkan pertanyaan soal..."
         ></textarea>
+        <div
+          v-if="form.question"
+          class="mt-3 p-3 bg-slate-50 border rounded text-sm"
+          v-html="renderLatex(form.question)"
+        ></div>
       </div>
 
       <!-- Opsi Jawaban -->
@@ -82,6 +87,11 @@
             class="flex-1 border rounded-lg px-3 py-2 text-sm"
             placeholder="Isi opsi jawaban"
           />
+          <div
+            v-if="option.text"
+            class="flex-1 text-xs text-slate-600"
+            v-html="renderLatex(option.text)"
+          ></div>
 
           <!-- TWK / TIU -->
           <template v-if="form.category !== 'TKP'">
@@ -123,6 +133,11 @@
           class="w-full mt-2 border rounded-lg px-3 py-2 text-sm"
           placeholder="Masukkan pembahasan soal..."
         ></textarea>
+        <div
+          v-if="form.explanation"
+          class="mt-3 p-3 bg-slate-50 border rounded text-sm"
+          v-html="renderLatex(form.explanation)"
+        ></div>
       </div>
 
       <!-- Actions -->
@@ -146,6 +161,8 @@
 
 <script setup>
 import { reactive, ref, watch } from "vue";
+import katex from "katex";
+import "katex/dist/katex.min.css";
 import { useRouter } from "vue-router";
 import api from "../../services/api.js";
 import BaseToast from "../Toast/BaseToast.vue";
@@ -163,6 +180,18 @@ function showNotification(message, type = "success") {
   toastMessage.value = message;
   toastType.value = type;
   showToast.value = true;
+}
+
+function renderLatex(text) {
+  if (!text) return "";
+
+  return text.replace(/\$(.*?)\$/g, (_, formula) => {
+    try {
+      return katex.renderToString(formula, { throwOnError: false });
+    } catch {
+      return formula;
+    }
+  });
 }
 
 /* ============================

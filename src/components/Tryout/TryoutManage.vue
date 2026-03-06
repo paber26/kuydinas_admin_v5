@@ -140,7 +140,10 @@ async function fetchBankSoal() {
   try {
     const res = await api.get("/soal");
 
-    bankSoal.value = res.data.data || [];
+    console.log(res);
+
+    // Laravel pagination returns { data: [...], links, meta }
+    bankSoal.value = res.data.data?.data || [];
   } catch (err) {
     showNotification("Gagal mengambil bank soal", "error");
   }
@@ -274,7 +277,9 @@ const totalTarget = computed(() => {
 /* ================= FILTER BANK SOAL ================= */
 
 const filteredBankSoal = computed(() => {
-  return bankSoal.value
+  const list = Array.isArray(bankSoal.value) ? bankSoal.value : [];
+
+  return list
     .filter((soal) =>
       selectedCategory.value ? soal.category === selectedCategory.value : true,
     )
