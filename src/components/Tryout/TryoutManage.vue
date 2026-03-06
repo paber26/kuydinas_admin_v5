@@ -73,13 +73,13 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import { useRoute } from "vue-router";
-import api from "../../services/api";
+
+import api from "../../services/api.js";
 
 import TryoutInfoCard from "./TryoutInfoCard.vue";
 import TryoutQuestionTable from "./TryoutQuestionTable.vue";
 import BankSoalTable from "./BankSoalTable.vue";
 import CategoryFilter from "./CategoryFilter.vue";
-
 import BaseToast from "../Toast/BaseToast.vue";
 
 const route = useRoute();
@@ -92,7 +92,6 @@ const questions = ref([]);
 const bankSoal = ref([]);
 
 const showBankSoal = ref(false);
-
 const selectedCategory = ref("");
 
 const editTarget = ref({
@@ -107,54 +106,44 @@ const showToast = ref(false);
 const toastMessage = ref("");
 const toastType = ref("success");
 
-async function reorderQuestion({ category, list }) {
-  const others = questions.value.filter((q) => q.category !== category);
-
-  questions.value = [...others, ...list];
-
-  const orders = {};
-
-  questions.value.forEach((q, index) => {
-    orders[q.id] = index + 1;
-  });
-
-  try {
-    await api.post(`/tryouts/${tryoutId}/reorder`, {
-      orders: orders,
-    });
-
-    toastMessage.value = "Urutan soal diperbarui";
-    toastType.value = "success";
-    showToast.value = true;
-  } catch (err) {
-    toastMessage.value = "Gagal menyimpan urutan";
-    toastType.value = "error";
-    showToast.value = true;
-  }
+function showNotification(msg, type = "success") {
+  toastMessage.value = msg;
+  toastType.value = type;
+  showToast.value = true;
 }
 
 /* ================= FETCH TRYOUT ================= */
 
 async function fetchTryout() {
-  const res = await api.get(`/tryouts/${tryoutId}`);
+  try {
+    const res = await api.get(`/tryouts/${tryoutId}`);
 
-  tryout.value = res.data.data;
+    tryout.value = res.data.data;
 
-  questions.value = res.data.data.soals || [];
+    questions.value = (res.data.data.soals || []).sort(
+      (a, b) => a.pivot.urutan_soal - b.pivot.urutan_soal,
+    );
 
-  editTarget.value = {
-    twk: tryout.value.twk_target,
-    tiu: tryout.value.tiu_target,
-    tkp: tryout.value.tkp_target,
-  };
+    editTarget.value = {
+      twk: tryout.value.twk_target,
+      tiu: tryout.value.tiu_target,
+      tkp: tryout.value.tkp_target,
+    };
+  } catch (err) {
+    showNotification("Gagal mengambil data tryout", "error");
+  }
 }
 
 /* ================= FETCH BANK SOAL ================= */
 
 async function fetchBankSoal() {
-  const res = await api.get("/soal");
+  try {
+    const res = await api.get("/soal");
 
-  bankSoal.value = res.data.data || [];
+    bankSoal.value = res.data.data || [];
+  } catch (err) {
+    showNotification("Gagal mengambil bank soal", "error");
+  }
 }
 
 /* ================= UPDATE TARGET ================= */
@@ -171,15 +160,38 @@ async function updateTarget() {
     tryout.value.tiu_target = editTarget.value.tiu;
     tryout.value.tkp_target = editTarget.value.tkp;
 
-    toastMessage.value = "Komposisi tryout berhasil diperbarui";
-    toastType.value = "success";
-    showToast.value = true;
+    showNotification("Komposisi tryout berhasil diperbarui");
   } catch (err) {
-    toastMessage.value =
-      err.response?.data?.message || "Gagal memperbarui komposisi";
+    showNotification(
+      err.response?.data?.message || "Gagal memperbarui komposisi",
+      "error",
+    );
+  }
+}
 
-    toastType.value = "error";
-    showToast.value = true;
+/* ================= REORDER ================= */
+
+async function reorderQuestion(newList) {
+  if (!newList) return;
+
+  questions.value = newList;
+
+  const orders = {};
+
+  newList.forEach((item, index) => {
+    orders[item.id] = index + 1;
+  });
+
+  try {
+    await api.put(`/tryouts/${tryoutId}/reorder`, { orders });
+
+    await fetchTryout();
+
+    showNotification("Urutan soal berhasil diperbarui", "success");
+  } catch (err) {
+    console.error(err.response?.data || err);
+
+    showNotification("Gagal menyimpan urutan soal", "error");
   }
 }
 
@@ -191,15 +203,14 @@ async function addQuestion(item) {
       soal_id: item.id,
     });
 
-    questions.value.push(item);
+    await fetchTryout();
 
-    toastMessage.value = "Soal berhasil ditambahkan";
-    toastType.value = "success";
-    showToast.value = true;
+    showNotification("Soal berhasil ditambahkan");
   } catch (err) {
-    toastMessage.value = "Gagal menambahkan soal";
-    toastType.value = "error";
-    showToast.value = true;
+    showNotification(
+      err.response?.data?.message || "Gagal menambahkan soal",
+      "error",
+    );
   }
 }
 
@@ -209,15 +220,14 @@ async function removeQuestion(id) {
   try {
     await api.delete(`/tryouts/${tryoutId}/detach/${id}`);
 
-    questions.value = questions.value.filter((q) => q.id !== id);
+    await fetchTryout();
 
-    toastMessage.value = "Soal berhasil dihapus";
-    toastType.value = "success";
-    showToast.value = true;
+    showNotification("Soal berhasil dihapus");
   } catch (err) {
-    toastMessage.value = "Gagal menghapus soal";
-    toastType.value = "error";
-    showToast.value = true;
+    showNotification(
+      err.response?.data?.message || "Gagal menghapus soal",
+      "error",
+    );
   }
 }
 
@@ -235,9 +245,7 @@ function toggleBankSoal() {
 
 function badge(category) {
   if (category === "TWK") return "bg-blue-100 text-blue-600";
-
   if (category === "TIU") return "bg-green-100 text-green-600";
-
   if (category === "TKP") return "bg-orange-100 text-orange-600";
 }
 
@@ -277,9 +285,7 @@ const filteredBankSoal = computed(() => {
 
 function isQuotaFull(category) {
   if (category === "TWK") return totalTWK.value >= editTarget.value.twk;
-
   if (category === "TIU") return totalTIU.value >= editTarget.value.tiu;
-
   if (category === "TKP") return totalTKP.value >= editTarget.value.tkp;
 
   return false;

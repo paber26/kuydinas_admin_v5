@@ -1,35 +1,26 @@
 import axios from "axios";
 
-const api = axios.create({
-  // baseURL: "https://apili.kuydinas.id/api",
-  baseURL: "http://127.0.0.1:8000/api",
+const adminApi = axios.create({
+  baseURL: "http://127.0.0.1:8000/api/admin",
   timeout: 10000,
   headers: {
     Accept: "application/json",
   },
 });
 
-// REQUEST INTERCEPTOR
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem("token");
+adminApi.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token");
 
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
 
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  },
-);
+  return config;
+});
 
-// RESPONSE INTERCEPTOR
-api.interceptors.response.use(
+adminApi.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Jika token expired / unauthorized
     if (error.response && error.response.status === 401) {
       localStorage.removeItem("token");
       localStorage.removeItem("role");
@@ -41,4 +32,4 @@ api.interceptors.response.use(
   },
 );
 
-export default api;
+export default adminApi;

@@ -133,7 +133,7 @@
 <script setup>
 import { reactive, computed, ref } from "vue";
 import { useRouter } from "vue-router";
-import api from "../../services/api";
+import api from "../../services/api.js";
 import BaseToast from "../Toast/BaseToast.vue";
 
 const router = useRouter();

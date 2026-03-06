@@ -31,8 +31,8 @@
         </div>
 
         <div>
-          <p class="text-xs text-slate-500">Halaman</p>
-          <p class="font-semibold">{{ currentPage }} / {{ totalPages }}</p>
+          <p class="text-xs text-slate-500">Total Ditampilkan</p>
+          <p class="font-semibold">{{ filteredSoals.length }}</p>
         </div>
 
         <div>
@@ -68,84 +68,98 @@
         </select>
       </div>
 
-      <div class="overflow-x-auto">
-        <table class="w-full text-sm border rounded-xl overflow-hidden">
-          <thead class="bg-slate-100 text-slate-600">
-            <tr>
-              <th class="px-4 py-3 text-left">No</th>
-              <th class="px-4 py-3 text-left">Kategori</th>
-              <th class="px-4 py-3 text-left">Pertanyaan</th>
-              <th class="px-4 py-3 text-left">Aksi</th>
-            </tr>
-          </thead>
+      <div class="space-y-6">
+        <div
+          v-for="(soal, index) in filteredSoals"
+          :key="soal.id"
+          class="border rounded-xl p-6 bg-white shadow-sm"
+        >
+          <!-- Header -->
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-3">
+              <span class="text-sm font-semibold text-slate-500">
+                Soal {{ index + 1 }}
+              </span>
 
-          <tbody>
-            <tr
-              v-for="(soal, index) in paginatedSoals"
-              :key="soal.id"
-              class="border-t hover:bg-slate-50 transition"
+              <span
+                class="px-3 py-1 text-xs rounded-full font-medium"
+                :class="badge(soal.category)"
+              >
+                {{ soal.category }}
+              </span>
+            </div>
+
+            <button
+              @click="openEditModal(soal)"
+              class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded-md text-xs"
             >
-              <td class="px-4 py-3">
-                {{ startIndex + index + 1 }}
-              </td>
+              Edit
+            </button>
+          </div>
 
-              <td class="px-4 py-3">
+          <!-- Pertanyaan -->
+          <div class="text-sm text-slate-800 whitespace-pre-line mb-4">
+            {{ soal.question }}
+          </div>
+
+          <!-- Opsi Jawaban -->
+          <div v-if="soal.options" class="space-y-2 mb-4">
+            <div
+              v-for="opt in soal.options"
+              :key="opt.label"
+              class="flex items-start justify-between text-sm gap-4"
+            >
+              <div class="flex gap-2 flex-1">
+                <span class="font-semibold">{{ opt.label }}.</span>
+                <span class="whitespace-pre-line">{{ opt.text }}</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <!-- skor untuk TKP -->
                 <span
-                  class="px-3 py-1 text-xs rounded-full font-medium"
-                  :class="badge(soal.category)"
+                  v-if="soal.category === 'TKP' && opt.score !== undefined"
+                  class="ml-2 text-xs px-2 py-1 rounded bg-slate-100 text-slate-600"
                 >
-                  {{ soal.category }}
+                  Skor: {{ opt.score }}
                 </span>
-              </td>
-
-              <td class="px-4 py-3 max-w-lg truncate">
-                {{ soal.question }}
-              </td>
-
-              <td class="px-4 py-3">
-                <button
-                  @click="openEditModal(soal)"
-                  class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded-md text-xs"
+                <!-- TWK / TIU -->
+                <span
+                  v-if="
+                    soal.category !== 'TKP' && soal.correct_answer === opt.label
+                  "
+                  class="text-green-600 font-semibold ml-2"
                 >
-                  Edit
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+                  ✔ Jawaban Benar
+                </span>
+                <!-- TKP (score tertinggi) -->
+                <span
+                  v-if="soal.category === 'TKP' && opt.score === 5"
+                  class="text-green-600 font-semibold ml-2"
+                >
+                  ✔ Skor Tertinggi
+                </span>
+              </div>
+            </div>
+          </div>
 
-      <!-- ================= PAGINATION ================= -->
-      <div class="flex justify-center items-center gap-2 mt-10">
-        <button
-          @click="prevPage"
-          :disabled="currentPage === 1"
-          class="px-3 py-1 rounded-lg text-sm bg-slate-100 disabled:opacity-40"
-        >
-          Prev
-        </button>
+          <!-- Jawaban benar -->
+          <div
+            v-if="soal.category !== 'TKP' && soal.correct_answer"
+            class="text-sm mb-3"
+          >
+            <span class="font-semibold text-slate-600">Jawaban Benar:</span>
+            <span class="text-green-600 font-semibold">
+              {{ soal.correct_answer }}</span
+            >
+          </div>
 
-        <button
-          v-for="page in totalPages"
-          :key="page"
-          @click="currentPage = page"
-          :class="[
-            'px-3 py-1 rounded-lg text-sm',
-            currentPage === page
-              ? 'bg-indigo-600 text-white'
-              : 'bg-slate-100 hover:bg-slate-200',
-          ]"
-        >
-          {{ page }}
-        </button>
-
-        <button
-          @click="nextPage"
-          :disabled="currentPage === totalPages"
-          class="px-3 py-1 rounded-lg text-sm bg-slate-100 disabled:opacity-40"
-        >
-          Next
-        </button>
+          <!-- Pembahasan -->
+          <div v-if="soal.explanation" class="border-t pt-4 mt-4">
+            <p class="text-xs text-slate-500 mb-1">Pembahasan</p>
+            <div class="text-sm text-slate-700 whitespace-pre-line">
+              {{ soal.explanation }}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -296,51 +310,48 @@ const showEditModal = ref(false);
 const selectedSoal = ref(null);
 const selectedCategory = ref("");
 
-const currentPage = ref(1);
-const perPage = 10;
-
 /* ================= FETCH ================= */
 async function fetchTryout() {
   try {
     loading.value = true;
+
     const res = await api.get(`/tryouts/${route.params.id}`);
-    tryout.value = res.data.data;
+
+    const data = res.data.data;
+
+    const soals = data.soals || [];
+
+    // pisahkan kategori
+    const twk = soals
+      .filter((s) => s.category === "TWK")
+      .sort((a, b) => a.pivot?.urutan_soal - b.pivot?.urutan_soal);
+
+    const tiu = soals
+      .filter((s) => s.category === "TIU")
+      .sort((a, b) => a.pivot?.urutan_soal - b.pivot?.urutan_soal);
+
+    const tkp = soals
+      .filter((s) => s.category === "TKP")
+      .sort((a, b) => a.pivot?.urutan_soal - b.pivot?.urutan_soal);
+
+    // gabungkan urutan kategori
+    data.soals = [...twk, ...tiu, ...tkp];
+
+    tryout.value = data;
   } finally {
     loading.value = false;
   }
 }
 
-/* ================= PAGINATION ================= */
-const startIndex = computed(() => (currentPage.value - 1) * perPage);
-
-const paginatedSoals = computed(() => {
+const filteredSoals = computed(() => {
   if (!tryout.value) return [];
 
-  const filtered = selectedCategory.value
-    ? tryout.value.soals.filter((s) => s.category === selectedCategory.value)
-    : tryout.value.soals;
+  if (!selectedCategory.value) return tryout.value.soals;
 
-  return filtered.slice(startIndex.value, startIndex.value + perPage);
+  return tryout.value.soals.filter(
+    (s) => s.category === selectedCategory.value,
+  );
 });
-
-const totalPages = computed(() => {
-  if (!tryout.value) return 1;
-
-  const filteredLength = selectedCategory.value
-    ? tryout.value.soals.filter((s) => s.category === selectedCategory.value)
-        .length
-    : tryout.value.soals.length;
-
-  return Math.ceil(filteredLength / perPage) || 1;
-});
-
-function nextPage() {
-  if (currentPage.value < totalPages.value) currentPage.value++;
-}
-
-function prevPage() {
-  if (currentPage.value > 1) currentPage.value--;
-}
 
 /* ================= BADGE ================= */
 function badge(category) {

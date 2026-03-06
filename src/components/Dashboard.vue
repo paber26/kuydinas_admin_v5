@@ -247,7 +247,7 @@ Chart.register(
   PointElement,
   LinearScale,
   CategoryScale,
-  Tooltip
+  Tooltip,
 );
 
 // =========================
@@ -255,7 +255,7 @@ Chart.register(
 // =========================
 const totalAkun = ref(0);
 const totalAkunFormatted = computed(() =>
-  totalAkun.value.toLocaleString("id-ID")
+  totalAkun.value.toLocaleString("id-ID"),
 );
 const provinsiStats = ref([]);
 
@@ -356,11 +356,11 @@ function buildMonthlyChart() {
   const lastRows = monthlyData.value.slice(-12);
 
   const labels = lastRows.map(
-    (row) => row.bulan_label || row.bulan || row.month_label || row.month || ""
+    (row) => row.bulan_label || row.bulan || row.month_label || row.month || "",
   );
 
   const values = lastRows.map((row) =>
-    Number(row.total || row.jumlah || row.count || 0)
+    Number(row.total || row.jumlah || row.count || 0),
   );
 
   if (monthlyChart) {
@@ -415,28 +415,28 @@ function buildMonthlyChart() {
 // =========================
 // 3. FETCH DATA DARI API
 // =========================
-onMounted(async () => {
-  try {
-    const [totalRes, provRes, bulanRes] = await Promise.all([
-      api.get("/gettotalakun"),
-      api.get("/getakunperprovinsi"),
-      api.get("/getpendaftarperbulan"), // <- pastikan endpoint ini ada
-    ]);
+// onMounted(async () => {
+//   try {
+//     // const [totalRes, provRes, bulanRes] = await Promise.all([
+//     //   api.get("/gettotalakun"),
+//     //   api.get("/getakunperprovinsi"),
+//     //   api.get("/getpendaftarperbulan"), // <- pastikan endpoint ini ada
+//     // ]);
 
-    // total pengguna aktif
-    const rawTotal = totalRes?.data;
-    // console.log("Raw total akun:", totalRes?.data);
-    totalAkun.value = Number(rawTotal) || 0;
+//     // total pengguna aktif
+//     const rawTotal = totalRes?.data;
+//     // console.log("Raw total akun:", totalRes?.data);
+//     totalAkun.value = Number(rawTotal) || 0;
 
-    // tabel provinsi (tetap)
-    provinsiStats.value = provRes.data || [];
-    sortData(sortBy.value);
+//     // tabel provinsi (tetap)
+//     provinsiStats.value = provRes.data || [];
+//     sortData(sortBy.value);
 
-    // grafik bulanan
-    monthlyData.value = bulanRes.data || [];
-    buildMonthlyChart();
-  } catch (err) {
-    console.error("Error dashboard:", err);
-  }
-});
+//     // grafik bulanan
+//     monthlyData.value = bulanRes.data || [];
+//     buildMonthlyChart();
+//   } catch (err) {
+//     console.error("Error dashboard:", err);
+//   }
+// });
 </script>

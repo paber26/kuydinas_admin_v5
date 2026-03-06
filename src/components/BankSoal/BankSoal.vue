@@ -1,6 +1,6 @@
 <template>
   <div class="p-6">
-    <!-- Header -->
+    <!-- HEADER -->
     <div class="flex justify-between items-center mb-6">
       <div>
         <h1 class="text-2xl font-bold text-slate-800">Bank Soal SKD</h1>
@@ -17,7 +17,7 @@
       </router-link>
     </div>
 
-    <!-- Tabs -->
+    <!-- TABS -->
     <div class="flex gap-2 mb-6">
       <button
         v-for="item in categories"
@@ -34,7 +34,7 @@
       </button>
     </div>
 
-    <!-- Filter Section -->
+    <!-- FILTER -->
     <div class="bg-white rounded-xl shadow-sm border p-4 mb-6">
       <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
         <!-- Subkategori -->
@@ -48,7 +48,7 @@
           />
         </div>
 
-        <!-- Tingkat Kesulitan -->
+        <!-- Difficulty -->
         <div>
           <label class="text-xs text-slate-500">Tingkat Kesulitan</label>
           <select
@@ -62,22 +62,22 @@
           </select>
         </div>
 
-        <!-- Status -->
+        <!-- Digunakan -->
         <div>
           <label class="text-xs text-slate-500">Status</label>
           <select
-            v-model="filterStatus"
+            v-model="filterUsed"
             class="w-full mt-1 border rounded-lg px-3 py-2 text-sm"
           >
             <option value="">Semua</option>
-            <option value="aktif">Aktif</option>
-            <option value="nonaktif">Nonaktif</option>
+            <option value="false">Belum Dipakai</option>
+            <option value="true">Sudah Dipakai</option>
           </select>
         </div>
       </div>
     </div>
 
-    <!-- Table -->
+    <!-- TABLE -->
     <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
       <table class="w-full text-sm">
         <thead class="bg-slate-50 text-slate-600">
@@ -87,6 +87,7 @@
             <th class="px-4 py-3 text-left">Subkategori</th>
             <th class="px-4 py-3 text-left">Kesulitan</th>
             <th class="px-4 py-3 text-left">Status</th>
+            <th class="px-4 py-3 text-left">Jumlah di pakai</th>
             <th class="px-4 py-3 text-left">Aksi</th>
           </tr>
         </thead>
@@ -130,6 +131,10 @@
               >
                 {{ item.status }}
               </span>
+            </td>
+
+            <td class="px-4 py-3">
+              {{ item.tryouts_count }}
             </td>
 
             <td class="px-4 py-3 flex gap-2">
@@ -180,8 +185,8 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
-import api from "../../services/api";
+import { ref, computed, onMounted, watch } from "vue";
+import api from "../../services/api.js";
 import BaseToast from "../Toast/BaseToast.vue";
 import PreviewModal from "./PreviewModal.vue";
 import EditModal from "./EditModal.vue";
@@ -192,19 +197,17 @@ const activeTab = ref("TWK");
 const questions = ref([]);
 const loading = ref(false);
 
-/* ============================
-   FILTER STATE
-============================ */
 const filterSubCategory = ref("");
 const filterDifficulty = ref("");
-const filterStatus = ref("");
+const filterUsed = ref(""); // ✅ digunakan / belum dipakai
 
-/* ============================
-   TOAST
-============================ */
 const showToast = ref(false);
 const toastMessage = ref("");
 const toastType = ref("success");
+
+const showPreview = ref(false);
+const showEdit = ref(false);
+const selectedSoal = ref(null);
 
 function showNotification(message, type = "success") {
   toastMessage.value = message;
@@ -212,31 +215,35 @@ function showNotification(message, type = "success") {
   showToast.value = true;
 }
 
-/* ============================
-   MODAL STATE
-============================ */
-const showPreview = ref(false);
-const showEdit = ref(false);
-const selectedSoal = ref(null);
-
-/* ============================
-   FETCH DATA
-============================ */
+/* ================= FETCH DATA ================= */
 async function fetchQuestions() {
   try {
     loading.value = true;
-    const response = await api.get("/soal");
-    questions.value = response.data.data;
+
+    const params = {};
+
+    if (filterUsed.value !== "") {
+      params.used = filterUsed.value;
+    }
+
+    const response = await api.get("/soal", { params });
+
+    const data = response.data.data;
+
+    questions.value = Array.isArray(data) ? data : (data.data ?? []);
   } catch (error) {
-    showNotification("Gagal mengambil data soal", "error");
+    console.log(error.response);
+
+    showNotification(
+      error.response?.data?.message || "Gagal mengambil data soal",
+      "error",
+    );
   } finally {
     loading.value = false;
   }
 }
 
-/* ============================
-   FILTERED DATA
-============================ */
+/* ================= FILTER FRONTEND ================= */
 const filteredQuestions = computed(() => {
   return questions.value
     .filter((q) => q.category === activeTab.value)
@@ -249,15 +256,15 @@ const filteredQuestions = computed(() => {
     )
     .filter((q) =>
       filterDifficulty.value ? q.difficulty === filterDifficulty.value : true,
-    )
-    .filter((q) =>
-      filterStatus.value ? q.status === filterStatus.value : true,
     );
 });
 
-/* ============================
-   MODAL ACTIONS
-============================ */
+/* ================= WATCH FILTER USED ================= */
+watch(filterUsed, () => {
+  fetchQuestions();
+});
+
+/* ================= MODAL ================= */
 function openPreview(soal) {
   selectedSoal.value = soal;
   showPreview.value = true;
@@ -268,26 +275,39 @@ function openEdit(soal) {
   showEdit.value = true;
 }
 
+/* ================= UPDATE ================= */
 async function updateSoal(data) {
   try {
     await api.put(`/soal/${data.id}`, data);
+
     showNotification("Soal berhasil diperbarui", "success");
+
     showEdit.value = false;
+
     fetchQuestions();
   } catch (error) {
-    showNotification("Gagal memperbarui soal", "error");
+    showNotification(
+      error.response?.data?.message || "Gagal memperbarui soal",
+      "error",
+    );
   }
 }
 
+/* ================= DELETE ================= */
 async function deleteSoal(id) {
   if (!confirm("Yakin ingin menghapus soal ini?")) return;
 
   try {
     await api.delete(`/soal/${id}`);
+
     showNotification("Soal berhasil dihapus", "success");
+
     fetchQuestions();
   } catch (error) {
-    showNotification("Gagal menghapus soal", "error");
+    showNotification(
+      error.response?.data?.message || "Gagal menghapus soal",
+      "error",
+    );
   }
 }
 

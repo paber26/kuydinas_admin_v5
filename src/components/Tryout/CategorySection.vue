@@ -16,28 +16,29 @@
       </div>
     </div>
 
-    <!-- DRAG TABLE -->
-    <draggable
-      v-model="list"
-      item-key="id"
-      @end="onDragEnd"
-      tag="table"
-      class="w-full text-sm"
-    >
-      <template #header>
-        <thead class="bg-slate-100 text-slate-700">
-          <tr>
-            <th class="px-6 py-3 text-left w-16">No</th>
-            <th class="px-6 py-3 text-left">Pertanyaan</th>
-            <th class="px-6 py-3 text-left w-24">Aksi</th>
-          </tr>
-        </thead>
-      </template>
+    <!-- TABLE -->
+    <table class="w-full text-sm">
+      <thead class="bg-slate-100 text-slate-700">
+        <tr>
+          <th class="px-6 py-3 text-left w-16">No</th>
+          <th class="px-6 py-3 text-left">Pertanyaan</th>
+          <th class="px-6 py-3 text-left w-24">Aksi</th>
+        </tr>
+      </thead>
 
-      <template #item="{ element, index }">
-        <tbody>
+      <draggable
+        v-model="list"
+        item-key="id"
+        tag="tbody"
+        @end="onDragEnd"
+        ghost-class="bg-purple-100"
+        animation="200"
+      >
+        <template #item="{ element, index }">
           <tr class="border-t hover:bg-purple-50 cursor-move">
-            <td class="px-6 py-3">{{ index + 1 }}</td>
+            <td class="px-6 py-3">
+              {{ index + 1 }}
+            </td>
 
             <td class="px-6 py-3 max-w-xl truncate">
               {{ element.question }}
@@ -52,9 +53,9 @@
               </button>
             </td>
           </tr>
-        </tbody>
-      </template>
-    </draggable>
+        </template>
+      </draggable>
+    </table>
 
     <div v-if="list.length === 0" class="text-center py-6 text-slate-400">
       Belum ada soal {{ title }}
@@ -68,25 +69,32 @@ import draggable from "vuedraggable";
 
 const props = defineProps({
   title: String,
-  questions: Array,
+  questions: {
+    type: Array,
+    default: () => [],
+  },
   badge: Function,
 });
 
 const emit = defineEmits(["remove", "reorder"]);
 
-const list = ref([...props.questions]);
+const list = ref([]);
+
+/* sync props ke local state */
 
 watch(
   () => props.questions,
   (val) => {
-    list.value = [...val];
+    list.value = Array.isArray(val) ? [...val] : [];
   },
+  { immediate: true },
 );
 
+/* drag selesai */
+
 function onDragEnd() {
-  emit("reorder", {
-    category: props.title,
-    list: list.value,
-  });
+  if (!list.value) return;
+
+  emit("reorder", list.value);
 }
 </script>

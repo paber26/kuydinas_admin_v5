@@ -27,12 +27,12 @@ const icons: any = {
 
 const menus = [
   { name: "Dashboard", path: "/", icon: "home" },
-  { name: "Try Out SKD CPNS", path: "/tryoutskd", icon: "document" },
-  { name: "Daftar Akun", path: "/daftarakun", icon: "users" },
-  { name: "Materi SKD", path: "/materiskd", icon: "book" },
+  // { name: "Try Out SKD CPNS", path: "/tryoutskd", icon: "document" },
+  // { name: "Daftar Akun", path: "/daftarakun", icon: "users" },
+  // { name: "Materi SKD", path: "/materiskd", icon: "book" },
   { name: "Bank Soal SKD", path: "/banksoal", icon: "database" },
   { name: "Buat Tryout", path: "/tryout-builder", icon: "layers" },
-  { name: "Axios Test", path: "/axiostest", icon: "zap" },
+  // { name: "Axios Test", path: "/axiostest", icon: "zap" },
 ];
 
 // Tutup sidebar mobile ketika route berubah
