@@ -1,10 +1,13 @@
 <template>
-  <div class="p-8 bg-slate-50 min-h-screen">
+  <div class="p-8 min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
     <!-- HEADER -->
-    <div class="flex justify-between items-center mb-8">
+    <div
+      class="flex justify-between items-center mb-8 bg-white border shadow-sm rounded-2xl px-6 py-5"
+    >
       <div>
-        <h1 class="text-3xl font-bold text-slate-800">Kelola Tryout</h1>
-
+        <h1 class="text-3xl font-bold text-slate-800 flex items-center gap-2">
+          🎯 Kelola Tryout
+        </h1>
         <p class="text-slate-500 text-sm mt-1">
           ID Tryout: {{ route.params.id }}
         </p>
@@ -12,7 +15,7 @@
 
       <router-link
         to="/tryout-builder"
-        class="px-4 py-2 rounded-lg bg-white border hover:bg-slate-100"
+        class="px-4 py-2 rounded-lg bg-slate-900 text-white hover:bg-slate-700 transition"
       >
         Kembali
       </router-link>
@@ -31,11 +34,59 @@
       @save="updateTarget"
     />
 
+    <!-- EDIT META TRYOUT -->
+    <div
+      v-if="tryout"
+      class="mt-6 bg-white rounded-2xl shadow-lg border border-slate-100 p-6"
+    >
+      <h2 class="text-lg font-semibold mb-4">Pengaturan Tryout</h2>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label class="text-sm text-slate-600">Tipe</label>
+          <select
+            v-model="editMeta.type"
+            class="mt-1 w-full border rounded-lg px-3 py-2"
+          >
+            <option value="free">Gratis</option>
+            <option value="premium">Premium</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="text-sm text-slate-600">Harga (koin)</label>
+          <input
+            v-model.number="editMeta.price"
+            type="number"
+            class="mt-1 w-full border rounded-lg px-3 py-2"
+          />
+        </div>
+
+        <div>
+          <label class="text-sm text-slate-600">Diskon (%)</label>
+          <input
+            v-model.number="editMeta.discount"
+            type="number"
+            class="mt-1 w-full border rounded-lg px-3 py-2"
+          />
+        </div>
+      </div>
+
+      <div class="mt-4 flex justify-end">
+        <button
+          @click="updateMeta"
+          class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg"
+        >
+          Simpan Pengaturan
+        </button>
+      </div>
+    </div>
+
     <!-- BUTTON TAMBAH -->
-    <div class="flex justify-end mb-6">
+    <div class="flex justify-end mb-6 mt-6">
       <button
         @click="toggleBankSoal"
-        class="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2 rounded-lg"
+        class="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2 rounded-xl shadow-md hover:shadow-lg transition"
       >
         {{ showBankSoal ? "Tutup Bank Soal" : "Tambah Soal" }}
       </button>
@@ -51,9 +102,13 @@
     <!-- BANK SOAL -->
     <div
       v-if="showBankSoal"
-      class="mt-10 bg-white rounded-2xl shadow-sm border p-6"
+      class="mt-10 bg-white rounded-2xl shadow-lg border border-slate-100 p-6"
     >
-      <h2 class="text-xl font-semibold mb-6">Pilih Soal</h2>
+      <h2
+        class="text-xl font-semibold mb-6 text-slate-800 flex items-center gap-2"
+      >
+        📚 Pilih Soal dari Bank Soal
+      </h2>
 
       <CategoryFilter v-model="selectedCategory" />
 
@@ -100,6 +155,12 @@ const editTarget = ref({
   tkp: 0,
 });
 
+const editMeta = ref({
+  type: "",
+  price: 0,
+  discount: 0,
+});
+
 /* ================= TOAST ================= */
 
 const showToast = ref(false);
@@ -128,6 +189,11 @@ async function fetchTryout() {
       twk: tryout.value.twk_target,
       tiu: tryout.value.tiu_target,
       tkp: tryout.value.tkp_target,
+    };
+    editMeta.value = {
+      type: tryout.value.type,
+      price: tryout.value.price ?? 0,
+      discount: tryout.value.discount ?? 0,
     };
   } catch (err) {
     showNotification("Gagal mengambil data tryout", "error");
@@ -167,6 +233,38 @@ async function updateTarget() {
   } catch (err) {
     showNotification(
       err.response?.data?.message || "Gagal memperbarui komposisi",
+      "error",
+    );
+  }
+}
+
+async function updateMeta() {
+  try {
+    await api.put(`/tryouts/${tryoutId}`, {
+      title: tryout.value.title,
+      duration: tryout.value.duration,
+
+      type: editMeta.value.type,
+      price: editMeta.value.price,
+      discount: editMeta.value.discount,
+
+      twk_count: tryout.value.twk_target,
+      tiu_count: tryout.value.tiu_target,
+      tkp_count: tryout.value.tkp_target,
+
+      twk_pg: tryout.value.twk_pg,
+      tiu_pg: tryout.value.tiu_pg,
+      tkp_pg: tryout.value.tkp_pg,
+    });
+
+    tryout.value.type = editMeta.value.type;
+    tryout.value.price = editMeta.value.price;
+    tryout.value.discount = editMeta.value.discount;
+
+    showNotification("Pengaturan tryout berhasil diperbarui");
+  } catch (err) {
+    showNotification(
+      err.response?.data?.message || "Gagal memperbarui pengaturan",
       "error",
     );
   }

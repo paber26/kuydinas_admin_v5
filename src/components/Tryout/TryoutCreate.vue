@@ -1,17 +1,27 @@
 <template>
   <div class="p-6">
     <!-- Header -->
-    <div class="mb-6">
-      <h1 class="text-2xl font-bold text-slate-800">Tambah Tryout</h1>
-      <p class="text-slate-500 text-sm">
-        Buat tryout terlebih dahulu. Soal akan ditambahkan sesuai komposisi yang
-        ditentukan.
-      </p>
+    <div class="mb-6 flex items-center justify-between">
+      <div>
+        <h1 class="text-2xl font-bold text-slate-800">Tambah Tryout</h1>
+        <p class="text-slate-500 text-sm">
+          Buat tryout terlebih dahulu. Soal akan ditambahkan sesuai komposisi
+          yang ditentukan.
+        </p>
+      </div>
+
+      <div
+        class="bg-purple-50 border border-purple-100 text-purple-700 text-sm px-4 py-2 rounded-lg"
+      >
+        Mode Admin
+      </div>
     </div>
 
     <div class="bg-white rounded-xl shadow-sm border p-6 space-y-8">
       <!-- Informasi Dasar -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div
+        class="grid grid-cols-1 md:grid-cols-3 gap-6 bg-slate-50 p-4 rounded-xl border"
+      >
         <div>
           <label class="text-sm font-medium text-slate-700">
             Nama Tryout
@@ -35,11 +45,42 @@
             class="w-full mt-2 border rounded-lg px-3 py-2 text-sm"
           />
         </div>
+
+        <div>
+          <label class="text-sm font-medium text-slate-700">
+            Tipe Tryout
+          </label>
+
+          <select
+            v-model="form.type"
+            class="w-full mt-2 border rounded-lg px-3 py-2 text-sm"
+          >
+            <option value="free">Gratis</option>
+            <option value="premium">Premium</option>
+          </select>
+        </div>
+
+        <div v-if="form.type === 'free'">
+          <label class="text-sm font-medium text-slate-700">
+            Kuota Peserta (Gratis)
+          </label>
+
+          <input
+            v-model.number="form.quota"
+            type="number"
+            min="1"
+            class="w-full mt-2 border rounded-lg px-3 py-2 text-sm"
+            placeholder="Contoh: 100"
+          />
+        </div>
       </div>
 
       <!-- Komposisi Soal (TARGET) -->
       <div>
-        <h2 class="text-lg font-semibold text-slate-800 mb-4">
+        <h2
+          class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2"
+        >
+          <span class="w-2 h-2 bg-purple-600 rounded-full"></span>
           Target Komposisi Soal
         </h2>
 
@@ -78,7 +119,12 @@
 
       <!-- Passing Grade -->
       <div>
-        <h2 class="text-lg font-semibold text-slate-800 mb-4">Passing Grade</h2>
+        <h2
+          class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2"
+        >
+          <span class="w-2 h-2 bg-purple-600 rounded-full"></span>
+          Passing Grade
+        </h2>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
           <input
@@ -102,24 +148,72 @@
         </div>
       </div>
 
+      <!-- Harga & Diskon -->
+      <div>
+        <h2
+          class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2"
+        >
+          <span class="w-2 h-2 bg-purple-600 rounded-full"></span>
+          Harga & Diskon
+        </h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="text-sm font-medium text-slate-700">
+              Harga (koin)
+            </label>
+
+            <input
+              v-model.number="form.price"
+              type="number"
+              min="0"
+              class="w-full mt-2 border rounded-lg px-3 py-2 text-sm"
+            />
+          </div>
+
+          <div>
+            <label class="text-sm font-medium text-slate-700">
+              Diskon (%)
+            </label>
+
+            <input
+              v-model.number="form.discount"
+              type="number"
+              min="0"
+              max="100"
+              class="w-full mt-2 border rounded-lg px-3 py-2 text-sm"
+            />
+          </div>
+        </div>
+      </div>
+
       <!-- Ringkasan -->
-      <div class="bg-slate-50 border rounded-xl p-4">
-        <h3 class="font-semibold text-slate-700 mb-2">Ringkasan Target</h3>
-        <p class="text-sm text-slate-600">
-          Total Target Soal: {{ totalQuestions }}
-        </p>
+      <div
+        class="bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-100 rounded-xl p-5 flex items-center justify-between"
+      >
+        <div>
+          <h3 class="font-semibold text-slate-700 mb-1">Ringkasan Target</h3>
+          <p class="text-sm text-slate-600">Total Target Soal</p>
+        </div>
+
+        <div class="text-2xl font-bold text-purple-700">
+          {{ totalQuestions }}
+        </div>
       </div>
 
       <!-- Action -->
-      <div class="flex justify-end gap-3 pt-4 border-t">
-        <router-link to="/tryouts" class="px-4 py-2 rounded-lg border text-sm">
+      <div class="flex justify-between items-center gap-3 pt-4 border-t">
+        <router-link
+          to="/tryouts"
+          class="px-4 py-2 rounded-lg border border-slate-200 text-slate-600 text-sm hover:bg-slate-50"
+        >
           Batal
         </router-link>
 
         <button
           :disabled="loading"
           @click="submitForm"
-          class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm disabled:opacity-50"
+          class="bg-purple-600 hover:bg-purple-700 shadow-sm text-white px-5 py-2 rounded-lg text-sm disabled:opacity-50 flex items-center gap-2"
         >
           {{ loading ? "Menyimpan..." : "Simpan Tryout" }}
         </button>
@@ -151,6 +245,10 @@ function showNotification(message, type = "success") {
 const form = reactive({
   title: "",
   duration: 100,
+  type: "free",
+  price: 0,
+  discount: 0,
+  quota: 100,
   twk_count: 30,
   tiu_count: 35,
   tkp_count: 35,
@@ -179,7 +277,33 @@ async function submitForm() {
   try {
     loading.value = true;
 
-    await api.post("/tryouts", form);
+    let payload = {
+      title: form.title,
+      duration: Number(form.duration),
+      type: form.type,
+      twk_count: Number(form.twk_count),
+      tiu_count: Number(form.tiu_count),
+      tkp_count: Number(form.tkp_count),
+      twk_pg: Number(form.twk_pg),
+      tiu_pg: Number(form.tiu_pg),
+      tkp_pg: Number(form.tkp_pg),
+      quota: null,
+      price: 0,
+      discount: 0,
+    };
+
+    // aturan free / premium
+    if (form.type === "free") {
+      payload.quota = Number(form.quota) || 100;
+    } else {
+      payload.quota = null;
+    }
+
+    // harga & diskon menggunakan satuan koin untuk semua tipe
+    payload.price = Number(form.price) || 0;
+    payload.discount = Number(form.discount) || 0;
+
+    await api.post("/tryouts", payload);
 
     showNotification("Tryout berhasil dibuat", "success");
 

@@ -57,6 +57,11 @@ const login = async () => {
     loading.value = false;
   }
 };
+
+const loginGoogle = () => {
+  // redirect ke backend Google OAuth
+  window.location.href = "http://127.0.0.1:8000/api/user/google/redirect";
+};
 </script>
 
 <template>
@@ -126,6 +131,19 @@ const login = async () => {
           <span v-if="loading"> Login... </span>
 
           <span v-else> Login </span>
+        </button>
+
+        <!-- GOOGLE LOGIN -->
+        <button
+          @click="loginGoogle"
+          class="w-full mt-3 flex items-center justify-center gap-2 border border-slate-300 hover:bg-slate-50 text-slate-700 font-medium py-2.5 rounded-lg transition"
+        >
+          <img
+            src="https://www.svgrepo.com/show/475656/google-color.svg"
+            class="w-5 h-5"
+          />
+
+          Login dengan Google
         </button>
       </div>
     </div>

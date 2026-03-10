@@ -26,6 +26,9 @@
             <th class="px-4 py-3 text-left">Nama Tryout</th>
             <th class="px-4 py-3 text-left">Total Soal</th>
             <th class="px-4 py-3 text-left">Durasi</th>
+            <th class="px-4 py-3 text-left">Tipe</th>
+            <th class="px-4 py-3 text-left">Harga</th>
+            <th class="px-4 py-3 text-left">Kuota</th>
             <th class="px-4 py-3 text-left">Status</th>
             <th class="px-4 py-3 text-left">Aksi</th>
           </tr>
@@ -51,13 +54,42 @@
               <span
                 class="px-2 py-1 rounded-full text-xs"
                 :class="
-                  item.status === 'publish'
+                  item.type === 'free'
                     ? 'bg-green-100 text-green-600'
-                    : 'bg-yellow-100 text-yellow-600'
+                    : 'bg-purple-100 text-purple-600'
                 "
               >
-                {{ item.status === "publish" ? "Publish" : "Draft" }}
+                {{ item.type === "free" ? "Gratis" : "Premium" }}
               </span>
+            </td>
+
+            <!-- PERBAIKAN HARGA -->
+            <td class="px-4 py-3">
+              <span
+                v-if="(item.price ?? 0) > 0"
+                class="font-medium text-purple-600"
+              >
+                {{ item.price }} koin
+              </span>
+              <span v-else class="text-green-600 font-medium"> Gratis </span>
+            </td>
+
+            <td class="px-4 py-3">
+              <span v-if="item.type === 'free'">
+                {{ item.quota ?? "-" }}
+              </span>
+              <span v-else>-</span>
+            </td>
+
+            <td class="px-4 py-3">
+              <select
+                v-model="item.status"
+                @change="updateStatus(item)"
+                class="border rounded-md text-xs px-2 py-1 bg-white"
+              >
+                <option value="draft">Draft</option>
+                <option value="publish">Publish</option>
+              </select>
             </td>
 
             <td class="px-4 py-3 flex gap-3">
@@ -166,6 +198,34 @@ async function deleteTryout(id) {
     console.error("Gagal menghapus:", error.response?.data || error);
 
     showNotification("Gagal menghapus tryout", "error");
+  }
+}
+
+/* =========================
+   UPDATE STATUS
+========================= */
+
+async function updateStatus(item) {
+  try {
+    await api.put(`/tryouts/${item.id}`, {
+      status: item.status,
+      title: item.title,
+      duration: item.duration,
+      type: item.type,
+      price: item.price,
+      discount: item.discount,
+      twk_count: item.twk_target,
+      tiu_count: item.tiu_target,
+      tkp_count: item.tkp_target,
+      twk_pg: item.twk_pg,
+      tiu_pg: item.tiu_pg,
+      tkp_pg: item.tkp_pg,
+    });
+
+    showNotification("Status tryout berhasil diperbarui");
+  } catch (error) {
+    console.error("Gagal mengubah status:", error.response?.data || error);
+    showNotification("Gagal mengubah status tryout", "error");
   }
 }
 
