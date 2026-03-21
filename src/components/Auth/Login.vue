@@ -1,7 +1,11 @@
 <script setup>
 import { ref } from "vue";
-import api from "../../services/api";
 import { useRouter } from "vue-router";
+import {
+  buildAdminGoogleLoginUrl,
+  loginAdminWithPassword,
+  saveAuthSession,
+} from "../../utils/auth";
 
 const router = useRouter();
 
@@ -22,13 +26,10 @@ const login = async () => {
   loading.value = true;
 
   try {
-    const res = await api.post("/login", {
+    const { token, user } = await loginAdminWithPassword({
       email: email.value,
       password: password.value,
     });
-
-    const token = res.data?.data?.token || res.data?.token;
-    const user = res.data?.data?.user || res.data?.user;
 
     if (!token || !user) {
       error.value = "Login gagal";
@@ -41,26 +42,18 @@ const login = async () => {
       return;
     }
 
-    // simpan auth
-    localStorage.setItem("token", token);
-    localStorage.setItem("role", user.role);
-    localStorage.setItem("user", JSON.stringify(user));
+    saveAuthSession({ token, role: user.role, user });
 
     router.replace("/");
   } catch (err) {
-    if (err.response?.data?.message) {
-      error.value = err.response.data.message;
-    } else {
-      error.value = "Server tidak dapat dihubungi";
-    }
+    error.value = err.message || "Server tidak dapat dihubungi";
   } finally {
     loading.value = false;
   }
 };
 
 const loginGoogle = () => {
-  // redirect ke backend Google OAuth
-  window.location.href = "http://127.0.0.1:8000/api/user/google/redirect";
+  window.location.href = buildAdminGoogleLoginUrl();
 };
 </script>
 
