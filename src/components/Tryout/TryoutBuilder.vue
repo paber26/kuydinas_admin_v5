@@ -108,6 +108,14 @@
               </router-link>
 
               <button
+                v-if="item.status !== 'publish'"
+                @click="publishTryout(item)"
+                class="text-green-600 hover:underline text-xs"
+              >
+                Terbitkan
+              </button>
+
+              <button
                 @click="deleteTryout(item.id)"
                 class="text-red-600 hover:underline text-xs"
               >
@@ -207,25 +215,44 @@ async function deleteTryout(id) {
 
 async function updateStatus(item) {
   try {
-    await api.put(`/tryouts/${item.id}`, {
-      status: item.status,
-      title: item.title,
-      duration: item.duration,
-      type: item.type,
-      price: item.price,
-      discount: item.discount,
-      twk_count: item.twk_target,
-      tiu_count: item.tiu_target,
-      tkp_count: item.tkp_target,
-      twk_pg: item.twk_pg,
-      tiu_pg: item.tiu_pg,
-      tkp_pg: item.tkp_pg,
-    });
+    if (item.status === "publish") {
+      await api.post(`/tryouts/${item.id}/publish`);
+    } else {
+      await api.put(`/tryouts/${item.id}`, {
+        status: item.status,
+        title: item.title,
+        duration: item.duration,
+        type: item.type,
+        price: item.price,
+        discount: item.discount,
+        twk_count: item.twk_target,
+        tiu_count: item.tiu_target,
+        tkp_count: item.tkp_target,
+        twk_pg: item.twk_pg,
+        tiu_pg: item.tiu_pg,
+        tkp_pg: item.tkp_pg,
+      });
+    }
 
     showNotification("Status tryout berhasil diperbarui");
   } catch (error) {
     console.error("Gagal mengubah status:", error.response?.data || error);
     showNotification("Gagal mengubah status tryout", "error");
+  }
+}
+
+async function publishTryout(item) {
+  try {
+    await api.post(`/tryouts/${item.id}/publish`);
+    item.status = "publish";
+    showNotification("Tryout berhasil dipublish");
+  } catch (error) {
+    console.error("Gagal publish:", error.response?.data || error);
+    const msg =
+      error.response?.data?.message ||
+      error.response?.data?.error ||
+      "Gagal publish tryout";
+    showNotification(msg, "error");
   }
 }
 

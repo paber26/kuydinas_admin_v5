@@ -12,6 +12,8 @@ import TryoutManage from "../components/Tryout/TryoutManage.vue";
 import Login from "../components/Auth/Login.vue";
 import GoogleCallback from "../components/Auth/GoogleCallback.vue";
 import { clearAuthSession, redirectToUserApp } from "../utils/auth";
+import TopupPackages from "../components/Topup/TopupPackages.vue";
+import Accounts from "../components/Users/Accounts.vue";
 
 const routes = [
   {
@@ -62,6 +64,16 @@ const routes = [
   {
     path: "/tryout-builder/:id/manage",
     component: TryoutManage,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: "/topup-packages",
+    component: TopupPackages,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: "/accounts",
+    component: Accounts,
     meta: { requiresAuth: true },
   },
   {
