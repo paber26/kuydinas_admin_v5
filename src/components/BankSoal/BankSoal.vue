@@ -220,7 +220,10 @@ async function fetchQuestions() {
   try {
     loading.value = true;
 
-    const params = {};
+    const params = {
+      category: activeTab.value,
+      per_page: 500
+    };
 
     if (filterUsed.value !== "") {
       params.used = filterUsed.value;
@@ -259,8 +262,8 @@ const filteredQuestions = computed(() => {
     );
 });
 
-/* ================= WATCH FILTER USED ================= */
-watch(filterUsed, () => {
+/* ================= WATCH FILTER USED & TAB ================= */
+watch([filterUsed, activeTab], () => {
   fetchQuestions();
 });
 
