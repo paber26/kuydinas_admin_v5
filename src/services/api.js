@@ -1,8 +1,14 @@
 import axios from "axios";
 
+const FALLBACK_BASE_URL = import.meta.env.DEV
+  ? "http://127.0.0.1:8000/api/admin"
+  : "https://apili.kuydinas.id/api/admin";
+
+const BASE_URL = import.meta.env.VITE_ADMIN_API_BASE_URL || FALLBACK_BASE_URL;
+
 const adminApi = axios.create({
   // baseURL: "http://127.0.0.1:8000/api/admin",
-  baseURL: "http://apili.kuydinas.id/api/admin",
+  baseURL: BASE_URL,
   timeout: 10000,
   headers: {
     Accept: "application/json",

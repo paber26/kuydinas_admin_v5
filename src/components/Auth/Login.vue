@@ -60,7 +60,11 @@ const login = async () => {
 
 const loginGoogle = () => {
   // redirect ke backend Google OAuth
-  window.location.href = "http://127.0.0.1:8000/api/user/google/redirect";
+  const fallbackBase = import.meta.env.DEV
+    ? "http://127.0.0.1:8000/api/admin"
+    : "https://apili.kuydinas.id/api/admin";
+  const base = import.meta.env.VITE_ADMIN_API_BASE_URL || fallbackBase;
+  window.location.href = `${base}/auth/google/redirect`;
 };
 </script>
 
