@@ -53,14 +53,15 @@
       <!-- Pertanyaan -->
       <div>
         <label class="text-sm font-medium text-slate-700">Pertanyaan</label>
-        <textarea
-          v-model="form.question"
-          rows="4"
-          class="w-full mt-2 border rounded-lg px-3 py-2 text-sm"
-          placeholder="Masukkan pertanyaan soal..."
-        ></textarea>
+        <div class="mt-2">
+          <ckeditor
+            v-model="form.question"
+            :editor="ClassicEditor"
+            :config="editorConfig"
+          />
+        </div>
         <div
-          v-if="form.question"
+          v-if="!isRichTextEmpty(form.question)"
           class="mt-3 p-3 bg-slate-50 border rounded text-sm"
           v-html="renderLatex(form.question)"
         ></div>
@@ -75,44 +76,46 @@
         <div
           v-for="(option, index) in form.options"
           :key="index"
-          class="flex items-center gap-3 mb-3"
+          class="grid grid-cols-12 gap-3 mb-4"
         >
-          <span class="w-6 font-semibold">
+          <div class="col-span-12 sm:col-span-1 font-semibold pt-2">
             {{ option.label }}
-          </span>
+          </div>
 
-          <input
-            v-model="option.text"
-            type="text"
-            class="flex-1 border rounded-lg px-3 py-2 text-sm"
-            placeholder="Isi opsi jawaban"
-          />
-          <div
-            v-if="option.text"
-            class="flex-1 text-xs text-slate-600"
-            v-html="renderLatex(option.text)"
-          ></div>
-
-          <!-- TWK / TIU -->
-          <template v-if="form.category !== 'TKP'">
-            <input
-              type="radio"
-              :value="option.label"
-              v-model="form.correct_answer"
+          <div class="col-span-12 sm:col-span-9">
+            <ckeditor
+              v-model="option.text"
+              :editor="ClassicEditor"
+              :config="editorConfig"
             />
-          </template>
+            <div
+              v-if="!isRichTextEmpty(option.text)"
+              class="mt-2 text-xs text-slate-600"
+              v-html="renderLatex(option.text)"
+            ></div>
+          </div>
 
-          <!-- TKP -->
-          <template v-else>
-            <input
-              v-model.number="option.score"
-              type="number"
-              min="1"
-              max="5"
-              class="w-16 border rounded-lg px-2 py-1 text-sm"
-              placeholder="Skor"
-            />
-          </template>
+          <div class="col-span-12 sm:col-span-2 flex items-center gap-2">
+            <template v-if="form.category !== 'TKP'">
+              <input
+                type="radio"
+                :value="option.label"
+                v-model="form.correct_answer"
+              />
+              <span class="text-xs text-slate-500">Benar</span>
+            </template>
+
+            <template v-else>
+              <input
+                v-model.number="option.score"
+                type="number"
+                min="1"
+                max="5"
+                class="w-20 border rounded-lg px-2 py-1 text-sm"
+                placeholder="Skor"
+              />
+            </template>
+          </div>
         </div>
 
         <p v-if="form.category === 'TKP'" class="text-xs text-slate-500 mt-2">
@@ -127,14 +130,15 @@
       <!-- Pembahasan -->
       <div>
         <label class="text-sm font-medium text-slate-700">Pembahasan</label>
-        <textarea
-          v-model="form.explanation"
-          rows="3"
-          class="w-full mt-2 border rounded-lg px-3 py-2 text-sm"
-          placeholder="Masukkan pembahasan soal..."
-        ></textarea>
+        <div class="mt-2">
+          <ckeditor
+            v-model="form.explanation"
+            :editor="ClassicEditor"
+            :config="editorConfig"
+          />
+        </div>
         <div
-          v-if="form.explanation"
+          v-if="!isRichTextEmpty(form.explanation)"
           class="mt-3 p-3 bg-slate-50 border rounded text-sm"
           v-html="renderLatex(form.explanation)"
         ></div>
@@ -166,8 +170,59 @@ import "katex/dist/katex.min.css";
 import { useRouter } from "vue-router";
 import api from "../../services/api.js";
 import BaseToast from "../Toast/BaseToast.vue";
+import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 
 const router = useRouter();
+
+class Base64UploadAdapter {
+  constructor(loader) {
+    this.loader = loader;
+    this.reader = null;
+  }
+
+  upload() {
+    return this.loader.file.then(
+      (file) =>
+        new Promise((resolve, reject) => {
+          this.reader = new FileReader();
+          this.reader.onload = () => resolve({ default: this.reader.result });
+          this.reader.onerror = () => reject(this.reader.error);
+          this.reader.onabort = () => reject();
+          this.reader.readAsDataURL(file);
+        }),
+    );
+  }
+
+  abort() {
+    if (this.reader) this.reader.abort();
+  }
+}
+
+function Base64UploadAdapterPlugin(editor) {
+  editor.plugins.get("FileRepository").createUploadAdapter = (loader) =>
+    new Base64UploadAdapter(loader);
+}
+
+const editorConfig = {
+  licenseKey: "GPL",
+  extraPlugins: [Base64UploadAdapterPlugin],
+  toolbar: [
+    "heading",
+    "|",
+    "bold",
+    "italic",
+    "underline",
+    "link",
+    "imageUpload",
+    "|",
+    "bulletedList",
+    "numberedList",
+    "blockQuote",
+    "|",
+    "undo",
+    "redo",
+  ],
+};
 
 /* ============================
    TOAST STATE
@@ -192,6 +247,18 @@ function renderLatex(text) {
       return formula;
     }
   });
+}
+
+function isRichTextEmpty(html) {
+  if (!html) return true;
+  try {
+    const doc = new DOMParser().parseFromString(String(html), "text/html");
+    const text = (doc.body.textContent || "").replace(/\u00a0/g, " ").trim();
+    if (text) return false;
+  } catch {
+    return String(html).trim() === "";
+  }
+  return !/<img\b|<figure\b|<table\b|<svg\b|<math\b/i.test(String(html));
 }
 
 /* ============================
@@ -261,12 +328,12 @@ async function submitForm() {
     return;
   }
 
-  if (!form.question || !form.question.trim()) {
+  if (isRichTextEmpty(form.question)) {
     showNotification("Pertanyaan tidak boleh kosong", "error");
     return;
   }
 
-  const emptyOption = form.options.find((opt) => !opt.text || !opt.text.trim());
+  const emptyOption = form.options.find((opt) => isRichTextEmpty(opt.text));
   if (emptyOption) {
     showNotification("Semua opsi jawaban wajib diisi", "error");
     return;
@@ -309,10 +376,10 @@ async function submitForm() {
       category: form.category,
       sub_category: form.sub_category || null,
       difficulty: form.difficulty || null,
-      question: form.question.trim(),
+      question: String(form.question || "").trim(),
       options: cleanedOptions,
       correct_answer: form.category === "TKP" ? null : form.correct_answer,
-      explanation: form.explanation || null,
+      explanation: form.explanation ? String(form.explanation).trim() : null,
       status: "aktif",
     };
 
