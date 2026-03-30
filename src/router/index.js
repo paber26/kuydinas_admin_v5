@@ -10,6 +10,8 @@ import TryoutBuilder from "../components/Tryout/TryoutBuilder.vue";
 import TryoutCreate from "../components/Tryout/TryoutCreate.vue";
 import TryoutManage from "../components/Tryout/TryoutManage.vue";
 import Login from "../components/Auth/Login.vue";
+import GoogleCallback from "../components/Auth/GoogleCallback.vue";
+import { clearAuthSession, redirectToUserApp } from "../utils/auth";
 import TopupPackages from "../components/Topup/TopupPackages.vue";
 import Accounts from "../components/Users/Accounts.vue";
 
@@ -17,6 +19,12 @@ const routes = [
   {
     path: "/login",
     component: Login,
+    meta: { authPage: true, guestOnly: true },
+  },
+  {
+    path: "/auth/google/callback",
+    component: GoogleCallback,
+    meta: { authPage: true, guestOnly: true },
   },
   {
     path: "/auth/google/callback",
@@ -94,13 +102,19 @@ router.beforeEach((to, from, next) => {
   const token = localStorage.getItem("token");
   const role = localStorage.getItem("role");
 
+  if (token && role && role !== "admin") {
+    clearAuthSession();
+    redirectToUserApp("/login");
+    return next(false);
+  }
+
   // jika belum login
   if (to.meta.requiresAuth && !token) {
     return next("/login");
   }
 
-  // jika sudah login tapi buka login page
-  if (to.path === "/login" && token) {
+  // jika sudah login tapi buka auth page
+  if (to.meta.guestOnly && token) {
     return next("/");
   }
 

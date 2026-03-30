@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen flex flex-col">
     <!-- LOGIN PAGE -->
-    <router-view v-if="route.path === '/login'" />
+    <router-view v-if="route.meta.authPage" />
 
     <!-- ADMIN LAYOUT -->
     <div v-else class="flex flex-1">

@@ -1,4 +1,9 @@
 import axios from "axios";
+import {
+  ADMIN_API_BASE_URL,
+  ADMIN_APP_URL,
+  clearAuthSession,
+} from "../utils/auth";
 
 const FALLBACK_BASE_URL = import.meta.env.DEV
   ? "http://127.0.0.1:8000/api/admin"
@@ -7,8 +12,7 @@ const FALLBACK_BASE_URL = import.meta.env.DEV
 const BASE_URL = import.meta.env.VITE_ADMIN_API_BASE_URL || FALLBACK_BASE_URL;
 
 const adminApi = axios.create({
-  // baseURL: "http://127.0.0.1:8000/api/admin",
-  baseURL: BASE_URL,
+  baseURL: ADMIN_API_BASE_URL,
   timeout: 10000,
   headers: {
     Accept: "application/json",
@@ -30,10 +34,12 @@ adminApi.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      localStorage.removeItem("token");
-      localStorage.removeItem("role");
+      clearAuthSession();
 
-      window.location.href = "/login";
+      if (typeof window !== "undefined") {
+        const loginUrl = new URL("/login", `${ADMIN_APP_URL || window.location.origin}/`);
+        window.location.href = loginUrl.toString();
+      }
     }
 
     return Promise.reject(error);

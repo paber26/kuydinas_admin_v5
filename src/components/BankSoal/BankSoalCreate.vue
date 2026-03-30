@@ -50,10 +50,21 @@
         </select>
       </div>
 
+      <div>
+        <label class="text-sm font-medium text-slate-700">Status</label>
+        <select
+          v-model="form.status"
+          class="w-full mt-2 border rounded-lg px-3 py-2 text-sm"
+        >
+          <option value="aktif">Aktif</option>
+          <option value="nonaktif">Nonaktif</option>
+        </select>
+      </div>
+
       <!-- Pertanyaan -->
       <div>
         <label class="text-sm font-medium text-slate-700">Pertanyaan</label>
-        <div class="mt-2">
+        <div class="mt-2 bank-soal-editor">
           <ckeditor
             v-model="form.question"
             :editor="ClassicEditor"
@@ -62,7 +73,7 @@
         </div>
         <div
           v-if="!isRichTextEmpty(form.question)"
-          class="mt-3 p-3 bg-slate-50 border rounded text-sm"
+          class="mt-3 p-3 bg-slate-50 border rounded text-sm rich-preview ck-content"
           v-html="renderLatex(form.question)"
         ></div>
       </div>
@@ -83,14 +94,16 @@
           </div>
 
           <div class="col-span-12 sm:col-span-9">
-            <ckeditor
-              v-model="option.text"
-              :editor="ClassicEditor"
-              :config="editorConfig"
-            />
+            <div class="bank-soal-editor">
+              <ckeditor
+                v-model="option.text"
+                :editor="ClassicEditor"
+                :config="editorConfig"
+              />
+            </div>
             <div
               v-if="!isRichTextEmpty(option.text)"
-              class="mt-2 text-xs text-slate-600"
+              class="mt-2 text-xs text-slate-600 rich-preview ck-content"
               v-html="renderLatex(option.text)"
             ></div>
           </div>
@@ -130,7 +143,7 @@
       <!-- Pembahasan -->
       <div>
         <label class="text-sm font-medium text-slate-700">Pembahasan</label>
-        <div class="mt-2">
+        <div class="mt-2 bank-soal-editor">
           <ckeditor
             v-model="form.explanation"
             :editor="ClassicEditor"
@@ -139,7 +152,7 @@
         </div>
         <div
           v-if="!isRichTextEmpty(form.explanation)"
-          class="mt-3 p-3 bg-slate-50 border rounded text-sm"
+          class="mt-3 p-3 bg-slate-50 border rounded text-sm rich-preview ck-content"
           v-html="renderLatex(form.explanation)"
         ></div>
       </div>
@@ -170,7 +183,7 @@ import "katex/dist/katex.min.css";
 import { useRouter } from "vue-router";
 import api from "../../services/api.js";
 import BaseToast from "../Toast/BaseToast.vue";
-import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
+import BankSoalEditor from "./BankSoalEditor.js";
 
 const router = useRouter();
 
@@ -222,7 +235,44 @@ const editorConfig = {
     "undo",
     "redo",
   ],
+  image: {
+    resizeUnit: "%",
+    resizeOptions: [
+      {
+        name: "resizeImage:original",
+        value: null,
+        label: "Original",
+      },
+      {
+        name: "resizeImage:25",
+        value: "25",
+        label: "25%",
+      },
+      {
+        name: "resizeImage:50",
+        value: "50",
+        label: "50%",
+      },
+      {
+        name: "resizeImage:75",
+        value: "75",
+        label: "75%",
+      },
+    ],
+    toolbar: [
+      "imageStyle:inline",
+      "imageStyle:wrapText",
+      "imageStyle:breakText",
+      "|",
+      "resizeImage",
+      "|",
+      "toggleImageCaption",
+      "imageTextAlternative",
+    ],
+  },
 };
+
+const ClassicEditor = BankSoalEditor;
 
 /* ============================
    TOAST STATE
@@ -261,24 +311,161 @@ function isRichTextEmpty(html) {
   return !/<img\b|<figure\b|<table\b|<svg\b|<math\b/i.test(String(html));
 }
 
+function createDefaultOptions() {
+  return ["A", "B", "C", "D", "E"].map((label) => ({
+    label,
+    text: "",
+    score: null,
+  }));
+}
+
+function createDebugOptions() {
+  const image = createDebugImageDataUri();
+
+  return [
+    { label: "A", text: "<p>Pancasila sebagai dasar negara</p>", score: null },
+    { label: "B", text: "<p>UUD 1945 sebagai dasar negara</p>", score: null },
+    {
+      label: "C",
+      text: `
+        <p>Pembukaan UUD 1945 alinea keempat</p>
+        <figure class="image">
+          <img src="${image}" alt="Debug image opsi jawaban" />
+        </figure>
+      `,
+      score: null,
+    },
+    {
+      label: "D",
+      text: "<p>Tap MPR tentang garis besar haluan negara</p>",
+      score: null,
+    },
+    {
+      label: "E",
+      text: "<p>Peraturan presiden tentang pendidikan</p>",
+      score: null,
+    },
+  ];
+}
+
+function createDebugImageDataUri() {
+  const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="640" height="240" viewBox="0 0 640 240">
+      <defs>
+        <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#7c3aed"/>
+          <stop offset="100%" stop-color="#0f172a"/>
+        </linearGradient>
+      </defs>
+      <rect width="640" height="240" rx="24" fill="url(#bg)"/>
+      <circle cx="130" cy="120" r="56" fill="rgba(255,255,255,0.18)"/>
+      <path d="M110 132 L130 108 L150 132 L170 100" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+      <text x="220" y="108" fill="#ffffff" font-size="30" font-family="Arial, sans-serif" font-weight="700">Debug Image</text>
+      <text x="220" y="148" fill="#dbeafe" font-size="18" font-family="Arial, sans-serif">Prefilled base64/SVG image for testing upload preview</text>
+    </svg>
+  `;
+
+  return `data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(svg)))}`;
+}
+
+function createDebugQuestionHtml() {
+  const image = createDebugImageDataUri();
+
+  return `
+    <p>Nilai dasar yang menjadi sumber dari segala sumber hukum di Indonesia adalah?</p>
+    <figure class="image">
+      <img src="${image}" alt="Debug image soal" />
+    </figure>
+    <p>Lihat gambar di atas sebagai tes render image di CKEditor.</p>
+  `;
+}
+
+function createInitialFormState() {
+  const useDebugSeed = import.meta.env.DEV;
+
+  return {
+    category: "TWK",
+    sub_category: useDebugSeed ? "Pancasila" : "",
+    difficulty: useDebugSeed ? "Easy" : "",
+    status: "aktif",
+    question: useDebugSeed ? createDebugQuestionHtml() : "",
+    correct_answer: useDebugSeed ? "C" : "",
+    explanation: useDebugSeed
+      ? `
+          <p>Jawaban yang benar adalah <strong>C</strong> karena Pembukaan UUD 1945 alinea keempat memuat dasar negara dan tujuan bernegara.</p>
+          <figure class="image">
+            <img src="${createDebugImageDataUri()}" alt="Debug image pembahasan" />
+          </figure>
+        `
+      : "",
+    options: useDebugSeed ? createDebugOptions() : createDefaultOptions(),
+  };
+}
+
+function normalizeHtml(value) {
+  return String(value || "").trim();
+}
+
+function normalizeOptionalText(value) {
+  const text = String(value || "").trim();
+  return text || null;
+}
+
+function normalizeOptions() {
+  return form.options.map((option) => {
+    const normalized = {
+      label: option.label,
+      text: normalizeHtml(option.text),
+    };
+
+    if (form.category === "TKP") {
+      normalized.score = Number(option.score);
+    }
+
+    return normalized;
+  });
+}
+
+function buildPayload() {
+  return {
+    category: form.category,
+    sub_category: normalizeOptionalText(form.sub_category),
+    difficulty: normalizeOptionalText(form.difficulty),
+    question: normalizeHtml(form.question),
+    options: normalizeOptions(),
+    correct_answer:
+      form.category === "TKP"
+        ? null
+        : String(form.correct_answer || "")
+            .trim()
+            .toUpperCase(),
+    explanation: normalizeOptionalText(form.explanation),
+    status: form.status,
+  };
+}
+
+function extractErrorMessage(error) {
+  const responseData = error?.response?.data;
+
+  if (responseData?.errors && typeof responseData.errors === "object") {
+    const firstError = Object.values(responseData.errors).flat()[0];
+    if (firstError) return firstError;
+  }
+
+  if (
+    typeof responseData?.message === "string" &&
+    responseData.message.trim()
+  ) {
+    return responseData.message;
+  }
+
+  return "Gagal menyimpan soal";
+}
+
 /* ============================
    FORM STATE
 ============================ */
-const form = reactive({
-  category: "TWK",
-  sub_category: "",
-  difficulty: "",
-  question: "",
-  correct_answer: "",
-  explanation: "",
-  options: [
-    { label: "A", text: "", score: null },
-    { label: "B", text: "", score: null },
-    { label: "C", text: "", score: null },
-    { label: "D", text: "", score: null },
-    { label: "E", text: "", score: null },
-  ],
-});
+const form = reactive(createInitialFormState());
 
 const loading = ref(false);
 
@@ -294,7 +481,7 @@ watch(
     form.options = form.options.map((opt) => ({
       label: opt.label,
       text: opt.text,
-      score: newCategory === "TKP" ? null : null,
+      score: newCategory === "TKP" ? opt.score : null,
     }));
   },
 );
@@ -303,26 +490,13 @@ watch(
    RESET FORM
 ============================ */
 function resetForm() {
-  form.category = "TWK";
-  form.sub_category = "";
-  form.difficulty = "";
-  form.question = "";
-  form.correct_answer = "";
-  form.explanation = "";
-  form.options = [
-    { label: "A", text: "", score: null },
-    { label: "B", text: "", score: null },
-    { label: "C", text: "", score: null },
-    { label: "D", text: "", score: null },
-    { label: "E", text: "", score: null },
-  ];
+  Object.assign(form, createInitialFormState());
 }
 
 /* ============================
    SUBMIT
 ============================ */
 async function submitForm() {
-  // VALIDASI
   if (!form.category) {
     showNotification("Kategori wajib dipilih", "error");
     return;
@@ -346,10 +520,15 @@ async function submitForm() {
 
   if (form.category === "TKP") {
     const invalidScore = form.options.find(
-      (opt) => opt.score === null || opt.score < 1 || opt.score > 5,
+      (opt) =>
+        opt.score === null ||
+        opt.score === "" ||
+        !Number.isInteger(Number(opt.score)) ||
+        Number(opt.score) < 1 ||
+        Number(opt.score) > 5,
     );
     if (invalidScore) {
-      showNotification("Setiap opsi TKP wajib memiliki skor 1–5", "error");
+      showNotification("Setiap opsi TKP wajib memiliki skor 1-5", "error");
       return;
     }
   }
@@ -357,31 +536,7 @@ async function submitForm() {
   try {
     loading.value = true;
 
-    let cleanedOptions = [];
-
-    if (form.category === "TKP") {
-      cleanedOptions = form.options.map((opt) => ({
-        label: opt.label,
-        text: opt.text,
-        score: opt.score,
-      }));
-    } else {
-      cleanedOptions = form.options.map((opt) => ({
-        label: opt.label,
-        text: opt.text,
-      }));
-    }
-
-    const payload = {
-      category: form.category,
-      sub_category: form.sub_category || null,
-      difficulty: form.difficulty || null,
-      question: String(form.question || "").trim(),
-      options: cleanedOptions,
-      correct_answer: form.category === "TKP" ? null : form.correct_answer,
-      explanation: form.explanation ? String(form.explanation).trim() : null,
-      status: "aktif",
-    };
+    const payload = buildPayload();
 
     await api.post("/soal", payload);
 
@@ -389,19 +544,87 @@ async function submitForm() {
 
     resetForm();
 
-    // Optional redirect
     setTimeout(() => {
       router.push("/banksoal");
     }, 1200);
   } catch (error) {
     console.error("API ERROR:", error.response?.data);
-
-    showNotification(
-      error.response?.data?.message || "Gagal menyimpan soal",
-      "error",
-    );
+    showNotification(extractErrorMessage(error), "error");
   } finally {
     loading.value = false;
   }
 }
 </script>
+
+<style>
+.bank-soal-editor .ck-content .image {
+  max-width: 100%;
+}
+
+.bank-soal-editor .ck-content .image img {
+  display: block;
+  height: auto;
+  max-width: 100%;
+}
+
+.bank-soal-editor .ck-content .image.image_resized {
+  box-sizing: border-box;
+  max-width: 100%;
+}
+
+.rich-preview figure.image {
+  box-sizing: border-box;
+  margin: 1rem auto;
+  max-width: 100%;
+}
+
+.rich-preview figure.image img {
+  display: block;
+  height: auto;
+  max-width: 100%;
+}
+
+.rich-preview figure.image.image_resized {
+  box-sizing: border-box;
+  max-width: 100%;
+}
+
+.rich-preview .image.image-style-block {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.rich-preview .image.image-style-side,
+.rich-preview .image.image-style-align-left {
+  clear: none;
+  float: left;
+  margin-left: 0;
+  margin-right: 1rem;
+}
+
+.rich-preview .image.image-style-align-right {
+  clear: none;
+  float: right;
+  margin-left: 1rem;
+  margin-right: 0;
+}
+
+.rich-preview .image.image-style-align-center {
+  clear: both;
+  float: none;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.rich-preview .image.image-style-inline {
+  display: inline-block;
+  margin: 0 1rem 0 0;
+  vertical-align: middle;
+}
+
+.rich-preview::after {
+  clear: both;
+  content: "";
+  display: block;
+}
+</style>

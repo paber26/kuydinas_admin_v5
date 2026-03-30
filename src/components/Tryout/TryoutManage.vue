@@ -204,7 +204,7 @@ async function fetchTryout() {
 
 async function fetchBankSoal() {
   try {
-    const res = await api.get("/soal");
+    const res = await api.get("/soal", { params: { per_page: 1000 } });
 
     console.log(res);
 

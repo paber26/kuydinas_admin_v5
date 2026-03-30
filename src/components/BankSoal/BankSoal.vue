@@ -79,16 +79,16 @@
 
     <!-- TABLE -->
     <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
-      <table class="w-full text-sm">
+      <table class="w-full table-fixed text-sm">
         <thead class="bg-slate-50 text-slate-600">
           <tr>
-            <th class="px-4 py-3 text-left">No</th>
-            <th class="px-4 py-3 text-left">Soal</th>
-            <th class="px-4 py-3 text-left">Subkategori</th>
-            <th class="px-4 py-3 text-left">Kesulitan</th>
-            <th class="px-4 py-3 text-left">Status</th>
-            <th class="px-4 py-3 text-left">Jumlah di pakai</th>
-            <th class="px-4 py-3 text-left">Aksi</th>
+            <th class="w-16 px-4 py-3 text-left">No</th>
+            <th class="w-[42%] px-4 py-3 text-left">Soal</th>
+            <th class="w-44 px-4 py-3 text-left">Subkategori</th>
+            <th class="w-44 px-4 py-3 text-left">Kesulitan</th>
+            <th class="w-32 px-4 py-3 text-left">Status</th>
+            <th class="w-32 px-4 py-3 text-left">Jumlah di pakai</th>
+            <th class="w-32 px-4 py-3 text-left">Aksi</th>
           </tr>
         </thead>
 
@@ -98,17 +98,17 @@
             :key="item.id"
             class="border-t hover:bg-slate-50"
           >
-            <td class="px-4 py-3">{{ index + 1 }}</td>
+            <td class="px-4 py-3 align-top">{{ index + 1 }}</td>
 
-            <td class="px-4 py-3 max-w-md truncate">
+            <td class="px-4 py-3 align-top whitespace-normal break-words leading-6">
               {{ item.question }}
             </td>
 
-            <td class="px-4 py-3">
+            <td class="px-4 py-3 align-top">
               {{ item.sub_category || "-" }}
             </td>
 
-            <td class="px-4 py-3">
+            <td class="px-4 py-3 align-top">
               <span
                 class="px-2 py-1 rounded-full text-xs"
                 :class="{
@@ -121,7 +121,7 @@
               </span>
             </td>
 
-            <td class="px-4 py-3">
+            <td class="px-4 py-3 align-top">
               <span
                 class="px-2 py-1 rounded-full text-xs font-medium"
                 :class="{
@@ -133,14 +133,14 @@
               </span>
             </td>
 
-            <td class="px-4 py-3">
+            <td class="px-4 py-3 align-top">
               {{ item.tryouts_count }}
             </td>
 
-            <td class="px-4 py-3 flex gap-2">
+            <td class="px-4 py-3 align-top">
               <button
                 @click="openPreview(item)"
-                class="text-blue-600 hover:underline text-xs"
+                class="mr-2 text-blue-600 hover:underline text-xs"
               >
                 Preview
               </button>
@@ -220,7 +220,10 @@ async function fetchQuestions() {
   try {
     loading.value = true;
 
-    const params = {};
+    const params = {
+      category: activeTab.value,
+      per_page: 500
+    };
 
     if (filterUsed.value !== "") {
       params.used = filterUsed.value;
@@ -259,8 +262,8 @@ const filteredQuestions = computed(() => {
     );
 });
 
-/* ================= WATCH FILTER USED ================= */
-watch(filterUsed, () => {
+/* ================= WATCH FILTER USED & TAB ================= */
+watch([filterUsed, activeTab], () => {
   fetchQuestions();
 });
 

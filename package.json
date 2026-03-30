@@ -9,12 +9,12 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@ckeditor/ckeditor5-build-classic": "^44.3.0",
     "@ckeditor/ckeditor5-vue": "^6.0.0",
     "@tailwindcss/vite": "^4.1.17",
     "axios": "^1.13.6",
     "chart.js": "^4.5.1",
-    "katex": "^0.16.35",
+    "ckeditor5": "^47.6.1",
+    "katex": "^0.16.40",
     "lodash": "^4.17.21",
     "lucide-vue-next": "^0.577.0",
     "vue": "^3.5.24",
