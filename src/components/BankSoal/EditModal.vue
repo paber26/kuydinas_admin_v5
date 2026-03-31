@@ -1,21 +1,59 @@
 <template>
   <div
     v-if="modelValue && localForm"
-    class="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
+    class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-6"
   >
     <div
-      class="bg-white w-full max-w-2xl rounded-xl p-6 max-h-[90vh] overflow-y-auto"
+      class="bg-white w-full max-w-6xl rounded-2xl p-8 max-h-[94vh] overflow-y-auto shadow-2xl"
     >
       <h2 class="text-lg font-bold mb-6">Edit Soal</h2>
 
       <!-- PERTANYAAN -->
       <div class="mb-4">
         <label class="text-sm font-medium">Pertanyaan</label>
-        <textarea
-          v-model="localForm.question"
-          class="w-full border px-3 py-2 rounded-lg mt-1"
-          rows="3"
-        ></textarea>
+        <div class="mt-2 bank-soal-editor">
+          <ckeditor
+            v-model="localForm.question"
+            :editor="ClassicEditor"
+            :config="editorConfig"
+            @ready="handleEditorReady('question', $event)"
+          />
+        </div>
+        <div
+          v-if="getResizeState('question').visible"
+          class="mt-2 flex flex-wrap items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm"
+        >
+          <span class="text-slate-600">Lebar gambar</span>
+          <input
+            v-model="getResizeState('question').value"
+            type="number"
+            min="1"
+            max="99"
+            class="w-24 rounded border px-2 py-1"
+            placeholder="1-99"
+            @keydown.enter.prevent="applySelectedImageResize('question')"
+          />
+          <span class="text-slate-500">%</span>
+          <button
+            type="button"
+            class="rounded bg-slate-900 px-3 py-1 text-white"
+            @click="applySelectedImageResize('question')"
+          >
+            Terapkan
+          </button>
+          <button
+            type="button"
+            class="rounded border px-3 py-1 text-slate-700"
+            @click="resetSelectedImageResize('question')"
+          >
+            Original
+          </button>
+        </div>
+        <div
+          v-if="!isRichTextEmpty(localForm.question)"
+          class="mt-2 p-3 bg-slate-50 border rounded text-sm rich-preview ck-content"
+          v-html="renderLatex(localForm.question)"
+        ></div>
       </div>
 
       <!-- SUBKATEGORI -->
@@ -47,47 +85,132 @@
         <div
           v-for="(option, index) in localForm.options"
           :key="index"
-          class="flex items-center gap-3 mb-3 border rounded-lg p-3"
+          class="mb-3 border rounded-lg p-3"
         >
-          <span class="font-semibold w-6">
-            {{ option.label }}
-          </span>
+          <div class="flex items-center gap-3">
+            <span class="font-semibold w-6">
+              {{ option.label }}
+            </span>
 
-          <input
-            v-model="option.text"
-            class="flex-1 border px-3 py-2 rounded-lg"
-          />
+            <div class="ml-auto flex items-center gap-3">
+              <!-- TWK / TIU -->
+              <template v-if="localForm.category !== 'TKP'">
+                <input
+                  type="radio"
+                  :value="option.label"
+                  v-model="localForm.correct_answer"
+                />
+              </template>
 
-          <!-- TWK / TIU -->
-          <template v-if="localForm.category !== 'TKP'">
-            <input
-              type="radio"
-              :value="option.label"
-              v-model="localForm.correct_answer"
+              <!-- TKP -->
+              <template v-else>
+                <input
+                  v-model.number="option.score"
+                  type="number"
+                  min="1"
+                  max="5"
+                  class="w-16 border px-2 py-1 rounded-lg"
+                />
+              </template>
+            </div>
+          </div>
+
+          <div class="mt-2 bank-soal-editor">
+            <ckeditor
+              v-model="option.text"
+              :editor="ClassicEditor"
+              :config="editorConfig"
+              @ready="handleEditorReady(`option-${option.label}`, $event)"
             />
-          </template>
+          </div>
 
-          <!-- TKP -->
-          <template v-else>
+          <div
+            v-if="getResizeState(`option-${option.label}`).visible"
+            class="mt-2 flex flex-wrap items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs"
+          >
+            <span class="text-slate-600">Lebar gambar</span>
             <input
-              v-model.number="option.score"
+              v-model="getResizeState(`option-${option.label}`).value"
               type="number"
               min="1"
-              max="5"
-              class="w-16 border px-2 py-1 rounded-lg"
+              max="99"
+              class="w-20 rounded border px-2 py-1"
+              placeholder="1-99"
+              @keydown.enter.prevent="
+                applySelectedImageResize(`option-${option.label}`)
+              "
             />
-          </template>
+            <span class="text-slate-500">%</span>
+            <button
+              type="button"
+              class="rounded bg-slate-900 px-2 py-1 text-white"
+              @click="applySelectedImageResize(`option-${option.label}`)"
+            >
+              Terapkan
+            </button>
+            <button
+              type="button"
+              class="rounded border px-2 py-1 text-slate-700"
+              @click="resetSelectedImageResize(`option-${option.label}`)"
+            >
+              Original
+            </button>
+          </div>
+
+          <div
+            v-if="!isRichTextEmpty(option.text)"
+            class="mt-2 text-xs text-slate-600 rich-preview ck-content"
+            v-html="renderLatex(option.text)"
+          ></div>
         </div>
       </div>
 
       <!-- PEMBAHASAN -->
       <div class="mb-4">
         <label class="text-sm font-medium">Pembahasan</label>
-        <textarea
-          v-model="localForm.explanation"
-          class="w-full border px-3 py-2 rounded-lg mt-1"
-          rows="3"
-        ></textarea>
+        <div class="mt-2 bank-soal-editor">
+          <ckeditor
+            v-model="localForm.explanation"
+            :editor="ClassicEditor"
+            :config="editorConfig"
+            @ready="handleEditorReady('explanation', $event)"
+          />
+        </div>
+        <div
+          v-if="getResizeState('explanation').visible"
+          class="mt-2 flex flex-wrap items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm"
+        >
+          <span class="text-slate-600">Lebar gambar</span>
+          <input
+            v-model="getResizeState('explanation').value"
+            type="number"
+            min="1"
+            max="99"
+            class="w-24 rounded border px-2 py-1"
+            placeholder="1-99"
+            @keydown.enter.prevent="applySelectedImageResize('explanation')"
+          />
+          <span class="text-slate-500">%</span>
+          <button
+            type="button"
+            class="rounded bg-slate-900 px-3 py-1 text-white"
+            @click="applySelectedImageResize('explanation')"
+          >
+            Terapkan
+          </button>
+          <button
+            type="button"
+            class="rounded border px-3 py-1 text-slate-700"
+            @click="resetSelectedImageResize('explanation')"
+          >
+            Original
+          </button>
+        </div>
+        <div
+          v-if="!isRichTextEmpty(localForm.explanation)"
+          class="mt-2 p-3 bg-slate-50 border rounded text-sm rich-preview ck-content"
+          v-html="renderLatex(localForm.explanation)"
+        ></div>
       </div>
 
       <!-- ACTION -->
@@ -111,7 +234,11 @@
 </template>
 
 <script setup>
-import { ref, watch } from "vue";
+import { reactive, ref, watch } from "vue";
+import katex from "katex";
+import "katex/dist/katex.min.css";
+import api from "../../services/api.js";
+import BankSoalEditor from "./BankSoalEditor.js";
 
 const props = defineProps({
   modelValue: Boolean,
@@ -121,6 +248,187 @@ const props = defineProps({
 const emit = defineEmits(["update:modelValue", "update"]);
 
 const localForm = ref(null);
+const ClassicEditor = BankSoalEditor;
+const editorInstances = new Map();
+
+class LaravelImageUploadAdapter {
+  constructor(loader) {
+    this.loader = loader;
+    this.abortController = new AbortController();
+  }
+
+  upload() {
+    return this.loader.file.then(async (file) => {
+      const formData = new FormData();
+      formData.append("upload", file);
+
+      const response = await api.post("/uploads/images", formData, {
+        signal: this.abortController.signal,
+      });
+
+      const url = response?.data?.default || response?.data?.url;
+      if (!url)
+        throw new Error("Upload gagal: URL tidak ditemukan di response");
+
+      return { default: url };
+    });
+  }
+
+  abort() {
+    this.abortController.abort();
+  }
+}
+
+function LaravelUploadAdapterPlugin(editor) {
+  editor.plugins.get("FileRepository").createUploadAdapter = (loader) =>
+    new LaravelImageUploadAdapter(loader);
+}
+
+const editorConfig = {
+  licenseKey: "GPL",
+  extraPlugins: [LaravelUploadAdapterPlugin],
+  toolbar: [
+    "heading",
+    "|",
+    "bold",
+    "italic",
+    "underline",
+    "link",
+    "imageUpload",
+    "|",
+    "bulletedList",
+    "numberedList",
+    "blockQuote",
+    "|",
+    "undo",
+    "redo",
+  ],
+  image: {
+    resizeUnit: "%",
+    resizeOptions: [
+      { name: "resizeImage:original", value: null, label: "Original" },
+      { name: "resizeImage:25", value: "25", label: "25%" },
+      { name: "resizeImage:50", value: "50", label: "50%" },
+      { name: "resizeImage:75", value: "75", label: "75%" },
+    ],
+    toolbar: [
+      "imageStyle:inline",
+      "imageStyle:wrapText",
+      "imageStyle:breakText",
+      "|",
+      "resizeImage",
+      "|",
+      "toggleImageCaption",
+      "imageTextAlternative",
+    ],
+  },
+};
+
+function createResizeUiState() {
+  return { visible: false, value: "" };
+}
+
+const imageResizeState = reactive({
+  question: createResizeUiState(),
+  explanation: createResizeUiState(),
+  optionStates: {},
+});
+
+function getResizeState(key) {
+  if (key === "question" || key === "explanation") return imageResizeState[key];
+  if (!imageResizeState.optionStates[key]) {
+    imageResizeState.optionStates[key] = createResizeUiState();
+  }
+  return imageResizeState.optionStates[key];
+}
+
+function getSelectedImageElement(editor) {
+  const selectedElement =
+    editor?.model?.document?.selection?.getSelectedElement();
+  if (!selectedElement) return null;
+  if (
+    selectedElement.name === "imageBlock" ||
+    selectedElement.name === "imageInline"
+  ) {
+    return selectedElement;
+  }
+  return null;
+}
+
+function syncResizeState(key) {
+  const editor = editorInstances.get(key);
+  const state = getResizeState(key);
+  const selectedImage = getSelectedImageElement(editor);
+
+  if (!selectedImage) {
+    state.visible = false;
+    state.value = "";
+    return;
+  }
+
+  state.visible = true;
+  state.value = selectedImage.getAttribute("width") || "";
+}
+
+function handleEditorReady(key, editor) {
+  editorInstances.set(key, editor);
+  syncResizeState(key);
+
+  const selection = editor.model.document.selection;
+  selection.on("change:range", () => syncResizeState(key));
+  selection.on("change:attribute", () => syncResizeState(key));
+}
+
+function applySelectedImageResize(key) {
+  const editor = editorInstances.get(key);
+  const state = getResizeState(key);
+  const selectedImage = getSelectedImageElement(editor);
+  if (!editor || !selectedImage) return;
+
+  const value = Number(state.value);
+  if (!Number.isInteger(value) || value < 1 || value > 99) return;
+
+  editor.model.change((writer) => {
+    writer.setAttribute("width", String(value), selectedImage);
+  });
+
+  syncResizeState(key);
+}
+
+function resetSelectedImageResize(key) {
+  const editor = editorInstances.get(key);
+  const selectedImage = getSelectedImageElement(editor);
+  if (!editor || !selectedImage) return;
+
+  editor.model.change((writer) => {
+    writer.removeAttribute("width", selectedImage);
+  });
+
+  syncResizeState(key);
+}
+
+function renderLatex(text) {
+  if (!text) return "";
+  return String(text).replace(/\$(.*?)\$/g, (_, formula) => {
+    try {
+      return katex.renderToString(formula, { throwOnError: false });
+    } catch {
+      return formula;
+    }
+  });
+}
+
+function isRichTextEmpty(html) {
+  if (!html) return true;
+  try {
+    const doc = new DOMParser().parseFromString(String(html), "text/html");
+    const text = (doc.body.textContent || "").replace(/\u00a0/g, " ").trim();
+    if (text) return false;
+  } catch {
+    return String(html).trim() === "";
+  }
+  return !/<img\b|<figure\b|<table\b|<svg\b|<math\b/i.test(String(html));
+}
 
 watch(
   () => props.soal,
@@ -136,3 +444,62 @@ function submit() {
   emit("update", localForm.value);
 }
 </script>
+
+<style>
+.bank-soal-editor .ck-content .image {
+  max-width: 100%;
+}
+
+.bank-soal-editor .ck-content .image img {
+  display: block;
+  height: auto;
+  max-width: 100%;
+}
+
+.bank-soal-editor .ck-content .image.image_resized {
+  box-sizing: border-box;
+  max-width: 100%;
+}
+
+.rich-preview figure.image {
+  box-sizing: border-box;
+  margin: 1rem 0;
+  max-width: 100%;
+}
+
+.rich-preview figure.image img {
+  display: block;
+  height: auto;
+  max-width: 100%;
+}
+
+.rich-preview figure.image.image_resized {
+  box-sizing: border-box;
+  max-width: 100%;
+}
+
+.rich-preview .image.image-style-block {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.rich-preview .image.image-style-wrap-text {
+  clear: none;
+  float: right;
+  margin-left: 1rem;
+  margin-right: 0;
+}
+
+.rich-preview .image.image-style-break-text {
+  clear: both;
+  float: none;
+  margin-left: auto;
+  margin-right: 0;
+}
+
+.rich-preview::after {
+  clear: both;
+  content: "";
+  display: block;
+}
+</style>
