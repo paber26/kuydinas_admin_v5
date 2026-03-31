@@ -73,6 +73,66 @@
             placeholder="Contoh: 100"
           />
         </div>
+
+        <div v-if="form.type === 'free'">
+          <label class="text-sm font-medium text-slate-700">
+            Tanggal Berlaku Mulai
+          </label>
+          <input
+            v-model="form.free_start_date"
+            type="datetime-local"
+            class="w-full mt-2 border rounded-lg px-3 py-2 text-sm"
+          />
+          <p class="mt-1 text-xs text-slate-500">
+            Akses tryout gratis dibuka mulai tanggal ini. Opsional.
+          </p>
+        </div>
+
+
+
+        <div v-if="form.type === 'free'">
+          <label class="text-sm font-medium text-slate-700">
+            Tanggal Berlaku Hingga
+          </label>
+          <input
+            v-model="form.free_valid_until"
+            type="datetime-local"
+            class="w-full mt-2 border rounded-lg px-3 py-2 text-sm"
+          />
+          <p class="mt-1 text-xs text-slate-500">
+            Akses tryout gratis ditutup lewat tanggal ini. Opsional.
+          </p>
+        </div>
+
+        <div v-if="form.type === 'free'">
+          <label class="text-sm font-medium text-slate-700">
+            Link Postingan IG
+          </label>
+          <input
+            v-model="form.info_ig"
+            type="url"
+            class="w-full mt-2 border rounded-lg px-3 py-2 text-sm"
+            placeholder="https://instagram.com/p/..."
+          />
+          <p class="mt-1 text-xs text-slate-500">
+            Link postingan Instagram untuk misi follow/share. Boleh dikosongkan.
+          </p>
+        </div>
+
+        <div v-if="form.type === 'free'">
+          <label class="text-sm font-medium text-slate-700">
+            Link WhatsApp / Telegram
+          </label>
+          <input
+            v-model="form.info_wa"
+            type="url"
+            class="w-full mt-2 border rounded-lg px-3 py-2 text-sm"
+            placeholder="https://chat.whatsapp.com/..."
+          />
+          <p class="mt-1 text-xs text-slate-500">
+            Link grup WhatsApp atau grup info. Boleh dikosongkan.
+          </p>
+        </div>
       </div>
 
       <!-- Komposisi Soal (TARGET) -->
@@ -249,6 +309,10 @@ const form = reactive({
   price: 0,
   discount: 0,
   quota: 100,
+  free_start_date: "",
+  free_valid_until: "",
+  info_ig: "",
+  info_wa: "",
   twk_count: 30,
   tiu_count: 35,
   tkp_count: 35,
@@ -295,8 +359,24 @@ async function submitForm() {
     // aturan free / premium
     if (form.type === "free") {
       payload.quota = Number(form.quota) || 100;
+      if (form.free_start_date) {
+        payload.free_start_date = form.free_start_date;
+      }
+      if (form.free_valid_until) {
+        payload.free_valid_until = form.free_valid_until;
+      }
+      if (form.info_ig) {
+        payload.info_ig = form.info_ig;
+      }
+      if (form.info_wa) {
+        payload.info_wa = form.info_wa;
+      }
     } else {
       payload.quota = null;
+      payload.free_start_date = null;
+      payload.free_valid_until = null;
+      payload.info_ig = null;
+      payload.info_wa = null;
     }
 
     // harga & diskon menggunakan satuan koin untuk semua tipe

@@ -27,6 +27,7 @@
             <th class="px-4 py-3 text-left">Total Soal</th>
             <th class="px-4 py-3 text-left">Durasi</th>
             <th class="px-4 py-3 text-left">Tipe</th>
+            <th class="px-4 py-3 text-left">Masa Akses</th>
             <th class="px-4 py-3 text-left">Harga</th>
             <th class="px-4 py-3 text-left">Kuota</th>
             <th class="px-4 py-3 text-left">Status</th>
@@ -61,6 +62,13 @@
               >
                 {{ item.type === "free" ? "Gratis" : "Premium" }}
               </span>
+            </td>
+
+            <td class="px-4 py-3">
+              <span v-if="item.type === 'free'" class="text-[11px] text-slate-500 whitespace-nowrap">
+                {{ formatTimeline(item.free_start_date, item.free_valid_until) }}
+              </span>
+              <span v-else class="text-slate-400">-</span>
             </td>
 
             <!-- PERBAIKAN HARGA -->
@@ -255,6 +263,16 @@ async function publishTryout(item) {
     showNotification(msg, "error");
   }
 }
+
+const formatTimeline = (start, end) => {
+  if (!start && !end) return "Tanpa batas";
+  
+  const options = { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' };
+  
+  const startStr = start ? new Date(start.replace(' ', 'T')).toLocaleDateString('id-ID', options).replace(/\./g, ':') : "Sekarang";
+  const endStr = end ? new Date(end.replace(' ', 'T')).toLocaleDateString('id-ID', options).replace(/\./g, ':') : "Seterusnya";
+  return `${startStr} - ${endStr}`;
+};
 
 onMounted(fetchTryouts);
 </script>
