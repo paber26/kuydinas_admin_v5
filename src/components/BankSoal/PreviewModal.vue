@@ -2,9 +2,11 @@
   <div
     v-if="modelValue && soal"
     class="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-50 p-6"
+    @click="$emit('update:modelValue', false)"
   >
     <div
       class="bg-white w-full max-w-6xl rounded-3xl shadow-2xl max-h-[92vh] overflow-y-auto"
+      @click.stop
     >
       <!-- ================= HEADER ================= -->
       <div
