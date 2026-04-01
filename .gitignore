@@ -11,7 +11,6 @@ node_modules
 
 *.local
 dist/*
-.env
 
 # Editor directories and files
 .vscode/*
