@@ -30,6 +30,7 @@
             <th class="px-4 py-3 text-left">Masa Akses</th>
             <th class="px-4 py-3 text-left">Harga</th>
             <th class="px-4 py-3 text-left">Kuota</th>
+            <th class="px-4 py-3 text-left">Info Link</th>
             <th class="px-4 py-3 text-left">Status</th>
             <th class="px-4 py-3 text-left">Aksi</th>
           </tr>
@@ -89,10 +90,18 @@
               <span v-else>-</span>
             </td>
 
+            <td class="px-4 py-3 text-xs">
+              <div v-if="item.type === 'free'" class="flex flex-col gap-1">
+                <input v-model="item.info_ig" @change="updateStatus(item, 'Link diperbarui')" placeholder="IG Link" class="border rounded px-2 py-1 w-24 bg-white" />
+                <input v-model="item.info_wa" @change="updateStatus(item, 'Link diperbarui')" placeholder="WA Link" class="border rounded px-2 py-1 w-24 bg-white" />
+              </div>
+              <span v-else>-</span>
+            </td>
+
             <td class="px-4 py-3">
               <select
                 v-model="item.status"
-                @change="updateStatus(item)"
+                @change="updateStatus(item, 'Status diperbarui')"
                 class="border rounded-md text-xs px-2 py-1 bg-white"
               >
                 <option value="draft">Draft</option>
@@ -221,10 +230,27 @@ async function deleteTryout(id) {
    UPDATE STATUS
 ========================= */
 
-async function updateStatus(item) {
+async function updateStatus(item, message = 'Tryout berhasil diperbarui') {
   try {
     if (item.status === "publish") {
       await api.post(`/tryouts/${item.id}/publish`);
+      // Update the rest of the metadata even if published (sometimes needed)
+      await api.put(`/tryouts/${item.id}`, {
+        status: item.status,
+        title: item.title,
+        duration: item.duration,
+        type: item.type,
+        price: item.price,
+        discount: item.discount,
+        info_ig: item.info_ig,
+        info_wa: item.info_wa,
+        twk_count: item.twk_target,
+        tiu_count: item.tiu_target,
+        tkp_count: item.tkp_target,
+        twk_pg: item.twk_pg,
+        tiu_pg: item.tiu_pg,
+        tkp_pg: item.tkp_pg,
+      });
     } else {
       await api.put(`/tryouts/${item.id}`, {
         status: item.status,
@@ -233,6 +259,8 @@ async function updateStatus(item) {
         type: item.type,
         price: item.price,
         discount: item.discount,
+        info_ig: item.info_ig,
+        info_wa: item.info_wa,
         twk_count: item.twk_target,
         tiu_count: item.tiu_target,
         tkp_count: item.tkp_target,
@@ -242,7 +270,7 @@ async function updateStatus(item) {
       });
     }
 
-    showNotification("Status tryout berhasil diperbarui");
+    showNotification(message);
   } catch (error) {
     console.error("Gagal mengubah status:", error.response?.data || error);
     showNotification("Gagal mengubah status tryout", "error");
