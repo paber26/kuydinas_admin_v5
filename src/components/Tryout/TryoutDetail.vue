@@ -191,12 +191,12 @@
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
-import katex from "katex";
 import "katex/dist/katex.min.css";
 import { useRoute } from "vue-router";
 import api from "../../services/api";
 import BaseToast from "../Toast/BaseToast.vue";
 import EditModal from "../BankSoal/EditModal.vue";
+import { renderRichHtmlWithLatex } from "../../utils/richText.js";
 
 const route = useRoute();
 
@@ -291,15 +291,7 @@ async function updateSoal(data) {
 }
 
 function renderLatex(text) {
-  if (!text) return "";
-
-  return text.replace(/\$(.*?)\$/g, (_, formula) => {
-    try {
-      return katex.renderToString(formula, { throwOnError: false });
-    } catch {
-      return formula;
-    }
-  });
+  return renderRichHtmlWithLatex(text);
 }
 
 function formatFreeValidity(item) {

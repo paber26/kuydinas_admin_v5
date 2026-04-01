@@ -176,8 +176,8 @@
 
 <script setup>
 import { computed } from "vue";
-import katex from "katex";
 import "katex/dist/katex.min.css";
+import { renderRichHtmlWithLatex } from "../../utils/richText.js";
 
 const props = defineProps({
   modelValue: Boolean,
@@ -200,14 +200,6 @@ const maxScore = computed(() => {
 });
 
 function renderLatex(text) {
-  if (!text) return "";
-
-  return text.replace(/\$(.*?)\$/g, (_, formula) => {
-    try {
-      return katex.renderToString(formula, { throwOnError: false });
-    } catch {
-      return formula;
-    }
-  });
+  return renderRichHtmlWithLatex(text);
 }
 </script>

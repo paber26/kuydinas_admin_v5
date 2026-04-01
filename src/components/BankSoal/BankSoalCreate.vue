@@ -178,12 +178,12 @@
 
 <script setup>
 import { reactive, ref, watch } from "vue";
-import katex from "katex";
 import "katex/dist/katex.min.css";
 import { useRouter } from "vue-router";
 import api from "../../services/api.js";
 import BaseToast from "../Toast/BaseToast.vue";
 import BankSoalEditor from "./BankSoalEditor.js";
+import { renderRichHtmlWithLatex } from "../../utils/richText.js";
 
 const router = useRouter();
 
@@ -293,15 +293,7 @@ function showNotification(message, type = "success") {
 }
 
 function renderLatex(text) {
-  if (!text) return "";
-
-  return text.replace(/\$(.*?)\$/g, (_, formula) => {
-    try {
-      return katex.renderToString(formula, { throwOnError: false });
-    } catch {
-      return formula;
-    }
-  });
+  return renderRichHtmlWithLatex(text);
 }
 
 function isRichTextEmpty(html) {

@@ -376,10 +376,10 @@
 
 <script setup>
 import { reactive, ref, watch } from "vue";
-import katex from "katex";
 import "katex/dist/katex.min.css";
 import api from "../../services/api.js";
 import BankSoalEditor from "./BankSoalEditor.js";
+import { renderRichHtmlWithLatex } from "../../utils/richText.js";
 
 const props = defineProps({
   modelValue: Boolean,
@@ -557,14 +557,7 @@ function resetSelectedImageResize(key) {
 }
 
 function renderLatex(text) {
-  if (!text) return "";
-  return String(text).replace(/\$(.*?)\$/g, (_, formula) => {
-    try {
-      return katex.renderToString(formula, { throwOnError: false });
-    } catch {
-      return formula;
-    }
-  });
+  return renderRichHtmlWithLatex(text);
 }
 
 function isRichTextEmpty(html) {
