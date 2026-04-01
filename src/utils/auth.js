@@ -1,5 +1,3 @@
-// const DEFAULT_ADMIN_API_BASE_URL = "http://apili.kuydinas.id/api/admin";
-const DEFAULT_ADMIN_API_BASE_URL = "http://127.0.0.1:8000/api/admin"
 const ADMIN_SUBDOMAIN = "admin"
 const USER_SUBDOMAIN = "user"
 
@@ -74,7 +72,7 @@ const resolveOrigin = (value) => {
 }
 
 export const ADMIN_API_BASE_URL = trimTrailingSlash(
-  import.meta.env.VITE_ADMIN_API_BASE_URL || DEFAULT_ADMIN_API_BASE_URL
+  import.meta.env.VITE_ADMIN_API_BASE_URL || ""
 )
 
 export const BACKEND_ORIGIN = resolveOrigin(ADMIN_API_BASE_URL)
