@@ -42,6 +42,24 @@
       <h2 class="text-lg font-semibold mb-4">Pengaturan Tryout</h2>
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="md:col-span-3">
+          <label class="text-sm text-slate-600">Nama Tryout</label>
+          <input
+            v-model="editMeta.title"
+            type="text"
+            class="mt-1 w-full border rounded-lg px-3 py-2"
+          />
+        </div>
+
+        <div>
+          <label class="text-sm text-slate-600">Durasi (menit)</label>
+          <input
+            v-model.number="editMeta.duration"
+            type="number"
+            class="mt-1 w-full border rounded-lg px-3 py-2"
+          />
+        </div>
+
         <div>
           <label class="text-sm text-slate-600">Tipe</label>
           <select
@@ -51,6 +69,75 @@
             <option value="free">Gratis</option>
             <option value="premium">Premium</option>
           </select>
+        </div>
+
+        <div v-if="editMeta.type === 'free'">
+          <label class="text-sm text-slate-600">Kuota Peserta</label>
+          <input
+            v-model.number="editMeta.quota"
+            type="number"
+            class="mt-1 w-full border rounded-lg px-3 py-2"
+          />
+        </div>
+
+
+
+        <div v-if="editMeta.type === 'free'">
+          <label class="text-sm text-slate-600">
+            Tanggal Berlaku Mulai
+          </label>
+          <input
+            v-model="editMeta.free_start_date"
+            type="datetime-local"
+            class="mt-1 w-full border rounded-lg px-3 py-2"
+          />
+          <p class="mt-1 text-xs text-slate-500">
+            Akses tryout gratis dibuka mulai tanggal ini. Opsional.
+          </p>
+        </div>
+
+        <div v-if="editMeta.type === 'free'">
+          <label class="text-sm text-slate-600">
+            Tanggal Berlaku Hingga
+          </label>
+          <input
+            v-model="editMeta.free_valid_until"
+            type="datetime-local"
+            class="mt-1 w-full border rounded-lg px-3 py-2"
+          />
+          <p class="mt-1 text-xs text-slate-500">
+            Akses tryout gratis ditutup lewat tanggal ini. Opsional.
+          </p>
+        </div>
+
+        <div v-if="editMeta.type === 'free'">
+          <label class="text-sm text-slate-600">
+            Link Postingan IG
+          </label>
+          <input
+            v-model="editMeta.info_ig"
+            type="url"
+            class="mt-1 w-full border rounded-lg px-3 py-2"
+            placeholder="https://instagram.com/p/..."
+          />
+          <p class="mt-1 text-xs text-slate-500">
+            Link postingan Instagram untuk misi follow/share. Boleh dikosongkan.
+          </p>
+        </div>
+
+        <div v-if="editMeta.type === 'free'">
+          <label class="text-sm text-slate-600">
+            Link WhatsApp / Telegram
+          </label>
+          <input
+            v-model="editMeta.info_wa"
+            type="url"
+            class="mt-1 w-full border rounded-lg px-3 py-2"
+            placeholder="https://chat.whatsapp.com/..."
+          />
+          <p class="mt-1 text-xs text-slate-500">
+            Link grup WhatsApp atau grup info. Boleh dikosongkan.
+          </p>
         </div>
 
         <div>
@@ -156,7 +243,15 @@ const editTarget = ref({
 });
 
 const editMeta = ref({
+  title: "",
+  duration: 0,
   type: "",
+  quota: 0,
+
+  free_start_date: "",
+  free_valid_until: "",
+  info_ig: "",
+  info_wa: "",
   price: 0,
   discount: 0,
 });
@@ -191,7 +286,14 @@ async function fetchTryout() {
       tkp: tryout.value.tkp_target,
     };
     editMeta.value = {
+      title: tryout.value.title,
+      duration: tryout.value.duration,
       type: tryout.value.type,
+      quota: tryout.value.quota ?? 0,
+      free_start_date: formatDateTimeInput(tryout.value.free_start_date),
+      free_valid_until: formatDateTimeInput(tryout.value.free_valid_until),
+      info_ig: tryout.value.info_ig || "",
+      info_wa: tryout.value.info_wa || "",
       price: tryout.value.price ?? 0,
       discount: tryout.value.discount ?? 0,
     };
@@ -241,10 +343,28 @@ async function updateTarget() {
 async function updateMeta() {
   try {
     await api.put(`/tryouts/${tryoutId}`, {
-      title: tryout.value.title,
-      duration: tryout.value.duration,
+      title: editMeta.value.title,
+      duration: editMeta.value.duration,
 
       type: editMeta.value.type,
+      quota: editMeta.value.type === "free" ? (editMeta.value.quota || null) : null,
+
+      free_start_date:
+        editMeta.value.type === "free"
+          ? editMeta.value.free_start_date || null
+          : null,
+      free_valid_until:
+        editMeta.value.type === "free"
+          ? editMeta.value.free_valid_until || null
+          : null,
+      info_ig:
+        editMeta.value.type === "free"
+          ? editMeta.value.info_ig || null
+          : null,
+      info_wa:
+        editMeta.value.type === "free"
+          ? editMeta.value.info_wa || null
+          : null,
       price: editMeta.value.price,
       discount: editMeta.value.discount,
 
@@ -257,7 +377,27 @@ async function updateMeta() {
       tkp_pg: tryout.value.tkp_pg,
     });
 
+    tryout.value.title = editMeta.value.title;
+    tryout.value.duration = editMeta.value.duration;
     tryout.value.type = editMeta.value.type;
+    tryout.value.quota = editMeta.value.type === "free" ? (editMeta.value.quota || null) : null;
+
+    tryout.value.free_start_date =
+      editMeta.value.type === "free"
+        ? editMeta.value.free_start_date || null
+        : null;
+    tryout.value.free_valid_until =
+      editMeta.value.type === "free"
+        ? editMeta.value.free_valid_until || null
+        : null;
+    tryout.value.info_ig =
+      editMeta.value.type === "free"
+        ? editMeta.value.info_ig || null
+        : null;
+    tryout.value.info_wa =
+      editMeta.value.type === "free"
+        ? editMeta.value.info_wa || null
+        : null;
     tryout.value.price = editMeta.value.price;
     tryout.value.discount = editMeta.value.discount;
 
@@ -340,6 +480,11 @@ function toggleBankSoal() {
   if (showBankSoal.value && bankSoal.value.length === 0) {
     fetchBankSoal();
   }
+}
+
+function formatDateTimeInput(value) {
+  if (!value) return "";
+  return String(value).replace(" ", "T").slice(0, 16);
 }
 
 /* ================= BADGE ================= */

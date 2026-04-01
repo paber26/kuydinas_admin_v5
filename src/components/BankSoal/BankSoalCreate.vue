@@ -187,38 +187,43 @@ import BankSoalEditor from "./BankSoalEditor.js";
 
 const router = useRouter();
 
-class Base64UploadAdapter {
+class LaravelImageUploadAdapter {
   constructor(loader) {
     this.loader = loader;
-    this.reader = null;
+    this.abortController = new AbortController();
   }
 
   upload() {
-    return this.loader.file.then(
-      (file) =>
-        new Promise((resolve, reject) => {
-          this.reader = new FileReader();
-          this.reader.onload = () => resolve({ default: this.reader.result });
-          this.reader.onerror = () => reject(this.reader.error);
-          this.reader.onabort = () => reject();
-          this.reader.readAsDataURL(file);
-        }),
-    );
+    return this.loader.file.then(async (file) => {
+      const formData = new FormData();
+      // CKEditor expects the field name "upload" by default.
+      formData.append("upload", file);
+
+      const response = await api.post("/uploads/images", formData, {
+        signal: this.abortController.signal,
+      });
+
+      const url = response?.data?.default || response?.data?.url;
+      if (!url)
+        throw new Error("Upload gagal: URL tidak ditemukan di response");
+
+      return { default: url };
+    });
   }
 
   abort() {
-    if (this.reader) this.reader.abort();
+    this.abortController.abort();
   }
 }
 
-function Base64UploadAdapterPlugin(editor) {
+function LaravelUploadAdapterPlugin(editor) {
   editor.plugins.get("FileRepository").createUploadAdapter = (loader) =>
-    new Base64UploadAdapter(loader);
+    new LaravelImageUploadAdapter(loader);
 }
 
 const editorConfig = {
   licenseKey: "GPL",
-  extraPlugins: [Base64UploadAdapterPlugin],
+  extraPlugins: [LaravelUploadAdapterPlugin],
   toolbar: [
     "heading",
     "|",
@@ -320,7 +325,8 @@ function createDefaultOptions() {
 }
 
 function createDebugOptions() {
-  const image = createDebugImageDataUri();
+  const image =
+    "https://dummyimage.com/640x240/7c3aed/ffffff.png&text=Debug+Image";
 
   return [
     { label: "A", text: "<p>Pancasila sebagai dasar negara</p>", score: null },
@@ -369,7 +375,8 @@ function createDebugImageDataUri() {
 }
 
 function createDebugQuestionHtml() {
-  const image = createDebugImageDataUri();
+  const image =
+    "https://dummyimage.com/640x240/7c3aed/ffffff.png&text=Debug+Image";
 
   return `
     <p>Nilai dasar yang menjadi sumber dari segala sumber hukum di Indonesia adalah?</p>
@@ -394,7 +401,7 @@ function createInitialFormState() {
       ? `
           <p>Jawaban yang benar adalah <strong>C</strong> karena Pembukaan UUD 1945 alinea keempat memuat dasar negara dan tujuan bernegara.</p>
           <figure class="image">
-            <img src="${createDebugImageDataUri()}" alt="Debug image pembahasan" />
+            <img src="https://dummyimage.com/640x240/7c3aed/ffffff.png&text=Debug+Image" alt="Debug image pembahasan" />
           </figure>
         `
       : "",

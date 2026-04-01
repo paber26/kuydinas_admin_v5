@@ -48,6 +48,13 @@
             {{ tryout.status }}
           </span>
         </div>
+
+        <div v-if="tryout.type === 'free'">
+          <p class="text-xs text-slate-500">Masa berlaku gratis</p>
+          <p class="font-semibold">
+            {{ formatFreeValidity(tryout) }}
+          </p>
+        </div>
       </div>
     </div>
 
@@ -390,6 +397,24 @@ function renderLatex(text) {
       return formula;
     }
   });
+}
+
+function formatFreeValidity(item) {
+  if (item?.free_valid_until) {
+    const date = new Date(item.free_valid_until);
+
+    if (!Number.isNaN(date.getTime())) {
+      return date.toLocaleDateString("id-ID", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric",
+      });
+    }
+
+    return item.free_valid_until;
+  }
+
+  return `${item?.free_valid_days ?? 7} hari`;
 }
 
 onMounted(fetchTryout);
