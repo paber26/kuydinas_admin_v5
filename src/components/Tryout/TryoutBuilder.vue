@@ -19,8 +19,9 @@
 
     <!-- Table -->
     <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
-      <table class="w-full text-sm">
-        <thead class="bg-slate-50 text-slate-600">
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm min-w-max whitespace-nowrap">
+          <thead class="bg-slate-50 text-slate-600">
           <tr>
             <th class="px-4 py-3 text-left">No</th>
             <th class="px-4 py-3 text-left">Nama Tryout</th>
@@ -125,6 +126,7 @@
           </tr>
         </tbody>
       </table>
+      </div>
 
       <!-- Empty -->
       <div
