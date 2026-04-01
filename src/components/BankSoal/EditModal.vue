@@ -1,232 +1,373 @@
 <template>
   <div
     v-if="modelValue && localForm"
-    class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-6"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+    @click.self="$emit('update:modelValue', false)"
   >
     <div
-      class="bg-white w-full max-w-6xl rounded-2xl p-8 max-h-[94vh] overflow-y-auto shadow-2xl"
+      class="w-full max-w-6xl max-h-[94vh] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl"
     >
-      <h2 class="text-lg font-bold mb-6">Edit Soal</h2>
+      <div class="border-b border-slate-200 bg-slate-50 px-6 py-5">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">
+              Bank Soal
+            </p>
+            <h2 class="mt-1 text-2xl font-bold text-slate-800">Edit Soal</h2>
+            <p class="mt-2 text-sm text-slate-500">
+              Rapikan isi soal, jawaban, dan pembahasan dengan pola editor seperti detail tryout.
+            </p>
+          </div>
 
-      <!-- PERTANYAAN -->
-      <div class="mb-4">
-        <label class="text-sm font-medium">Pertanyaan</label>
-        <div class="mt-2 bank-soal-editor">
-          <ckeditor
-            v-model="localForm.question"
-            :editor="ClassicEditor"
-            :config="editorConfig"
-            @ready="handleEditorReady('question', $event)"
-          />
-        </div>
-        <div
-          v-if="getResizeState('question').visible"
-          class="mt-2 flex flex-wrap items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm"
-        >
-          <span class="text-slate-600">Lebar gambar</span>
-          <input
-            v-model="getResizeState('question').value"
-            type="number"
-            min="1"
-            max="99"
-            class="w-24 rounded border px-2 py-1"
-            placeholder="1-99"
-            @keydown.enter.prevent="applySelectedImageResize('question')"
-          />
-          <span class="text-slate-500">%</span>
-          <button
-            type="button"
-            class="rounded bg-slate-900 px-3 py-1 text-white"
-            @click="applySelectedImageResize('question')"
-          >
-            Terapkan
-          </button>
-          <button
-            type="button"
-            class="rounded border px-3 py-1 text-slate-700"
-            @click="resetSelectedImageResize('question')"
-          >
-            Original
-          </button>
-        </div>
-        <div
-          v-if="!isRichTextEmpty(localForm.question)"
-          class="mt-2 p-3 bg-slate-50 border rounded text-sm rich-preview ck-content"
-          v-html="renderLatex(localForm.question)"
-        ></div>
-      </div>
-
-      <!-- SUBKATEGORI -->
-      <div class="mb-4">
-        <label class="text-sm font-medium">Subkategori</label>
-        <input
-          v-model="localForm.sub_category"
-          class="w-full border px-3 py-2 rounded-lg mt-1"
-        />
-      </div>
-
-      <!-- DIFFICULTY -->
-      <div class="mb-4">
-        <label class="text-sm font-medium">Tingkat Kesulitan</label>
-        <select
-          v-model="localForm.difficulty"
-          class="w-full border px-3 py-2 rounded-lg mt-1"
-        >
-          <option>Easy</option>
-          <option>Medium</option>
-          <option>Hard</option>
-        </select>
-      </div>
-
-      <!-- OPSI JAWABAN -->
-      <div class="mb-6">
-        <label class="text-sm font-medium mb-2 block"> Opsi Jawaban </label>
-
-        <div
-          v-for="(option, index) in localForm.options"
-          :key="index"
-          class="mb-3 border rounded-lg p-3"
-        >
           <div class="flex items-center gap-3">
-            <span class="font-semibold w-6">
-              {{ option.label }}
-            </span>
+            <button
+              type="button"
+              class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-indigo-400"
+              :disabled="saving"
+              @click="submit"
+            >
+              {{ saving ? "Menyimpan..." : submitLabel }}
+            </button>
 
-            <div class="ml-auto flex items-center gap-3">
-              <!-- TWK / TIU -->
-              <template v-if="localForm.category !== 'TKP'">
-                <input
-                  type="radio"
-                  :value="option.label"
-                  v-model="localForm.correct_answer"
+            <button
+              type="button"
+              class="rounded-full border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
+              :disabled="saving"
+              @click="$emit('update:modelValue', false)"
+            >
+              Tutup
+            </button>
+          </div>
+        </div>
+
+        <div class="mt-4 flex flex-wrap items-center gap-2">
+          <span
+            class="rounded-full px-3 py-1 text-xs font-semibold"
+            :class="categoryBadgeClass(localForm.category)"
+          >
+            {{ localForm.category || "-" }}
+          </span>
+          <span class="rounded-full bg-white px-3 py-1 text-xs font-medium text-slate-600 border border-slate-200">
+            {{ localForm.sub_category || "Tanpa subkategori" }}
+          </span>
+          <span class="rounded-full bg-white px-3 py-1 text-xs font-medium text-slate-600 border border-slate-200">
+            {{ localForm.difficulty || "Tanpa level" }}
+          </span>
+        </div>
+      </div>
+
+      <div class="max-h-[calc(94vh-150px)] overflow-y-auto px-6 py-6">
+        <div class="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
+          <div class="space-y-6">
+            <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+              <div class="mb-4 flex items-center justify-between gap-3">
+                <div>
+                  <h3 class="text-lg font-semibold text-slate-800">Pertanyaan</h3>
+                  <p class="text-sm text-slate-500">Perbarui naskah utama soal beserta gambar dan rumus.</p>
+                </div>
+              </div>
+
+              <div class="bank-soal-editor">
+                <ckeditor
+                  v-model="localForm.question"
+                  :editor="ClassicEditor"
+                  :config="editorConfig"
+                  @ready="handleEditorReady('question', $event)"
                 />
-              </template>
+              </div>
 
-              <!-- TKP -->
-              <template v-else>
+              <div
+                v-if="getResizeState('question').visible"
+                class="mt-3 flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm"
+              >
+                <span class="text-slate-600">Lebar gambar</span>
                 <input
-                  v-model.number="option.score"
+                  v-model="getResizeState('question').value"
                   type="number"
                   min="1"
-                  max="5"
-                  class="w-16 border px-2 py-1 rounded-lg"
+                  max="99"
+                  class="w-24 rounded-lg border border-slate-300 px-2 py-1"
+                  placeholder="1-99"
+                  @keydown.enter.prevent="applySelectedImageResize('question')"
                 />
-              </template>
-            </div>
+                <span class="text-slate-500">%</span>
+                <button
+                  type="button"
+                  class="rounded-lg bg-slate-900 px-3 py-1 text-white"
+                  @click="applySelectedImageResize('question')"
+                >
+                  Terapkan
+                </button>
+                <button
+                  type="button"
+                  class="rounded-lg border border-slate-300 px-3 py-1 text-slate-700"
+                  @click="resetSelectedImageResize('question')"
+                >
+                  Original
+                </button>
+              </div>
+
+              <div
+                v-if="!isRichTextEmpty(localForm.question)"
+                class="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4 rich-preview ck-content"
+                v-html="renderLatex(localForm.question)"
+              ></div>
+            </section>
+
+            <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+              <div class="mb-4">
+                <h3 class="text-lg font-semibold text-slate-800">Opsi Jawaban</h3>
+                <p class="text-sm text-slate-500">
+                  {{ localForm.category === "TKP" ? "Atur skor tiap opsi dari 1 sampai 5." : "Pilih satu jawaban yang benar." }}
+                </p>
+              </div>
+
+              <div class="space-y-4">
+                <article
+                  v-for="(option, index) in localForm.options || []"
+                  :key="index"
+                  class="rounded-2xl border border-slate-200 bg-slate-50 p-4"
+                >
+                  <div class="flex flex-wrap items-center gap-3">
+                    <span class="inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-900 text-sm font-semibold text-white">
+                      {{ option.label }}
+                    </span>
+
+                    <div class="text-sm text-slate-500">
+                      Opsi {{ option.label }}
+                    </div>
+
+                    <div class="ml-auto flex items-center gap-3">
+                      <template v-if="localForm.category !== 'TKP'">
+                        <label class="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700">
+                          <input
+                            type="radio"
+                            :value="option.label"
+                            v-model="localForm.correct_answer"
+                          />
+                          Jawaban benar
+                        </label>
+                      </template>
+
+                      <template v-else>
+                        <label class="flex items-center gap-2 text-sm text-slate-600">
+                          Skor
+                          <input
+                            v-model.number="option.score"
+                            type="number"
+                            min="1"
+                            max="5"
+                            class="w-16 rounded-lg border border-slate-300 bg-white px-2 py-1"
+                          />
+                        </label>
+                      </template>
+                    </div>
+                  </div>
+
+                  <div class="mt-3 bank-soal-editor">
+                    <ckeditor
+                      v-model="option.text"
+                      :editor="ClassicEditor"
+                      :config="editorConfig"
+                      @ready="handleEditorReady(`option-${option.label}`, $event)"
+                    />
+                  </div>
+
+                  <div
+                    v-if="getResizeState(`option-${option.label}`).visible"
+                    class="mt-3 flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs"
+                  >
+                    <span class="text-slate-600">Lebar gambar</span>
+                    <input
+                      v-model="getResizeState(`option-${option.label}`).value"
+                      type="number"
+                      min="1"
+                      max="99"
+                      class="w-20 rounded-lg border border-slate-300 px-2 py-1"
+                      placeholder="1-99"
+                      @keydown.enter.prevent="
+                        applySelectedImageResize(`option-${option.label}`)
+                      "
+                    />
+                    <span class="text-slate-500">%</span>
+                    <button
+                      type="button"
+                      class="rounded-lg bg-slate-900 px-2 py-1 text-white"
+                      @click="applySelectedImageResize(`option-${option.label}`)"
+                    >
+                      Terapkan
+                    </button>
+                    <button
+                      type="button"
+                      class="rounded-lg border border-slate-300 px-2 py-1 text-slate-700"
+                      @click="resetSelectedImageResize(`option-${option.label}`)"
+                    >
+                      Original
+                    </button>
+                  </div>
+
+                  <div
+                    v-if="!isRichTextEmpty(option.text)"
+                    class="mt-3 rounded-xl border border-slate-200 bg-white p-3 text-sm text-slate-700 rich-preview ck-content"
+                    v-html="renderLatex(option.text)"
+                  ></div>
+                </article>
+              </div>
+            </section>
+
+            <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+              <div class="mb-4">
+                <h3 class="text-lg font-semibold text-slate-800">Pembahasan</h3>
+                <p class="text-sm text-slate-500">Tambahkan alasan atau langkah penyelesaian agar mudah dicek.</p>
+              </div>
+
+              <div class="bank-soal-editor">
+                <ckeditor
+                  v-model="localForm.explanation"
+                  :editor="ClassicEditor"
+                  :config="editorConfig"
+                  @ready="handleEditorReady('explanation', $event)"
+                />
+              </div>
+
+              <div
+                v-if="getResizeState('explanation').visible"
+                class="mt-3 flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm"
+              >
+                <span class="text-slate-600">Lebar gambar</span>
+                <input
+                  v-model="getResizeState('explanation').value"
+                  type="number"
+                  min="1"
+                  max="99"
+                  class="w-24 rounded-lg border border-slate-300 px-2 py-1"
+                  placeholder="1-99"
+                  @keydown.enter.prevent="applySelectedImageResize('explanation')"
+                />
+                <span class="text-slate-500">%</span>
+                <button
+                  type="button"
+                  class="rounded-lg bg-slate-900 px-3 py-1 text-white"
+                  @click="applySelectedImageResize('explanation')"
+                >
+                  Terapkan
+                </button>
+                <button
+                  type="button"
+                  class="rounded-lg border border-slate-300 px-3 py-1 text-slate-700"
+                  @click="resetSelectedImageResize('explanation')"
+                >
+                  Original
+                </button>
+              </div>
+
+              <div
+                v-if="!isRichTextEmpty(localForm.explanation)"
+                class="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4 rich-preview ck-content"
+                v-html="renderLatex(localForm.explanation)"
+              ></div>
+            </section>
           </div>
 
-          <div class="mt-2 bank-soal-editor">
-            <ckeditor
-              v-model="option.text"
-              :editor="ClassicEditor"
-              :config="editorConfig"
-              @ready="handleEditorReady(`option-${option.label}`, $event)"
-            />
-          </div>
+          <aside class="space-y-6">
+            <section class="rounded-2xl border border-slate-200 bg-slate-50 p-5 shadow-sm">
+              <h3 class="text-lg font-semibold text-slate-800">Informasi Soal</h3>
+              <div class="mt-4 space-y-4">
+                <div>
+                  <label class="text-xs font-semibold uppercase tracking-wide text-slate-500">Kategori</label>
+                  <input
+                    :value="localForm.category"
+                    type="text"
+                    disabled
+                    class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700"
+                  />
+                </div>
 
-          <div
-            v-if="getResizeState(`option-${option.label}`).visible"
-            class="mt-2 flex flex-wrap items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs"
-          >
-            <span class="text-slate-600">Lebar gambar</span>
-            <input
-              v-model="getResizeState(`option-${option.label}`).value"
-              type="number"
-              min="1"
-              max="99"
-              class="w-20 rounded border px-2 py-1"
-              placeholder="1-99"
-              @keydown.enter.prevent="
-                applySelectedImageResize(`option-${option.label}`)
-              "
-            />
-            <span class="text-slate-500">%</span>
-            <button
-              type="button"
-              class="rounded bg-slate-900 px-2 py-1 text-white"
-              @click="applySelectedImageResize(`option-${option.label}`)"
-            >
-              Terapkan
-            </button>
-            <button
-              type="button"
-              class="rounded border px-2 py-1 text-slate-700"
-              @click="resetSelectedImageResize(`option-${option.label}`)"
-            >
-              Original
-            </button>
-          </div>
+                <div>
+                  <label class="text-xs font-semibold uppercase tracking-wide text-slate-500">Subkategori</label>
+                  <input
+                    v-model="localForm.sub_category"
+                    type="text"
+                    class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
+                  />
+                </div>
 
-          <div
-            v-if="!isRichTextEmpty(option.text)"
-            class="mt-2 text-xs text-slate-600 rich-preview ck-content"
-            v-html="renderLatex(option.text)"
-          ></div>
+                <div>
+                  <label class="text-xs font-semibold uppercase tracking-wide text-slate-500">Tingkat Kesulitan</label>
+                  <select
+                    v-model="localForm.difficulty"
+                    class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
+                  >
+                    <option>Easy</option>
+                    <option>Medium</option>
+                    <option>Hard</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="text-xs font-semibold uppercase tracking-wide text-slate-500">Status</label>
+                  <select
+                    v-model="localForm.status"
+                    class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
+                  >
+                    <option value="aktif">Aktif</option>
+                    <option value="nonaktif">Nonaktif</option>
+                  </select>
+                </div>
+              </div>
+            </section>
+
+            <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+              <h3 class="text-lg font-semibold text-slate-800">Ringkasan Jawaban</h3>
+              <div class="mt-4 rounded-xl bg-slate-50 p-4 text-sm text-slate-600">
+                <template v-if="localForm.category === 'TKP'">
+                  Soal TKP menggunakan skor per opsi. Pastikan nilai paling tinggi ada pada opsi terbaik.
+                </template>
+                <template v-else>
+                  Jawaban benar saat ini:
+                  <span class="font-semibold text-slate-900">
+                    {{ localForm.correct_answer || "-" }}
+                  </span>
+                </template>
+              </div>
+
+              <div class="mt-4 flex flex-wrap gap-2">
+                <span
+                  v-for="option in localForm.options || []"
+                  :key="option.label"
+                  class="rounded-full border border-slate-200 px-3 py-1 text-xs"
+                  :class="answerChipClass(option)"
+                >
+                  <template v-if="localForm.category === 'TKP'">
+                    {{ option.label }} · skor {{ option.score ?? "-" }}
+                  </template>
+                  <template v-else>
+                    {{ option.label }}{{ localForm.correct_answer === option.label ? " · benar" : "" }}
+                  </template>
+                </span>
+              </div>
+            </section>
+          </aside>
         </div>
       </div>
 
-      <!-- PEMBAHASAN -->
-      <div class="mb-4">
-        <label class="text-sm font-medium">Pembahasan</label>
-        <div class="mt-2 bank-soal-editor">
-          <ckeditor
-            v-model="localForm.explanation"
-            :editor="ClassicEditor"
-            :config="editorConfig"
-            @ready="handleEditorReady('explanation', $event)"
-          />
-        </div>
-        <div
-          v-if="getResizeState('explanation').visible"
-          class="mt-2 flex flex-wrap items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm"
-        >
-          <span class="text-slate-600">Lebar gambar</span>
-          <input
-            v-model="getResizeState('explanation').value"
-            type="number"
-            min="1"
-            max="99"
-            class="w-24 rounded border px-2 py-1"
-            placeholder="1-99"
-            @keydown.enter.prevent="applySelectedImageResize('explanation')"
-          />
-          <span class="text-slate-500">%</span>
-          <button
-            type="button"
-            class="rounded bg-slate-900 px-3 py-1 text-white"
-            @click="applySelectedImageResize('explanation')"
-          >
-            Terapkan
-          </button>
-          <button
-            type="button"
-            class="rounded border px-3 py-1 text-slate-700"
-            @click="resetSelectedImageResize('explanation')"
-          >
-            Original
-          </button>
-        </div>
-        <div
-          v-if="!isRichTextEmpty(localForm.explanation)"
-          class="mt-2 p-3 bg-slate-50 border rounded text-sm rich-preview ck-content"
-          v-html="renderLatex(localForm.explanation)"
-        ></div>
-      </div>
-
-      <!-- ACTION -->
-      <div class="flex justify-end gap-3 mt-6">
+      <div class="sticky bottom-0 flex justify-end gap-3 border-t border-slate-200 bg-white/95 px-6 py-4 backdrop-blur">
         <button
+          type="button"
+          class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 disabled:cursor-not-allowed disabled:opacity-60"
+          :disabled="saving"
           @click="$emit('update:modelValue', false)"
-          class="border px-4 py-2 rounded-lg text-sm"
         >
           Batal
         </button>
 
         <button
+          type="button"
+          class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-indigo-400"
+          :disabled="saving"
           @click="submit"
-          class="bg-purple-600 text-white px-4 py-2 rounded-lg text-sm"
         >
-          Simpan
+          {{ saving ? "Menyimpan..." : submitLabel }}
         </button>
       </div>
     </div>
@@ -243,6 +384,14 @@ import BankSoalEditor from "./BankSoalEditor.js";
 const props = defineProps({
   modelValue: Boolean,
   soal: Object,
+  saving: {
+    type: Boolean,
+    default: false,
+  },
+  submitLabel: {
+    type: String,
+    default: "Simpan Perubahan",
+  },
 });
 
 const emit = defineEmits(["update:modelValue", "update"]);
@@ -428,6 +577,23 @@ function isRichTextEmpty(html) {
     return String(html).trim() === "";
   }
   return !/<img\b|<figure\b|<table\b|<svg\b|<math\b/i.test(String(html));
+}
+
+function categoryBadgeClass(category) {
+  if (category === "TWK") return "bg-blue-100 text-blue-700";
+  if (category === "TIU") return "bg-emerald-100 text-emerald-700";
+  if (category === "TKP") return "bg-amber-100 text-amber-700";
+  return "bg-slate-100 text-slate-700";
+}
+
+function answerChipClass(option) {
+  if (localForm.value?.category === "TKP") {
+    return "bg-white text-slate-700";
+  }
+
+  return localForm.value?.correct_answer === option.label
+    ? "border-emerald-200 bg-emerald-50 font-semibold text-emerald-700"
+    : "bg-white text-slate-600";
 }
 
 watch(

@@ -175,135 +175,15 @@
       </div>
     </div>
 
-    <!-- ================= EDIT MODAL ================= -->
-    <div
-      v-if="showEditModal"
-      class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-    >
-      <div class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl p-8">
-        <h3 class="text-xl font-semibold mb-6">Edit Soal</h3>
+    <EditModal
+      v-model="showEditModal"
+      :soal="selectedSoal"
+      :saving="savingEdit"
+      submit-label="Simpan ke API"
+      @update="updateSoal"
+    />
 
-        <div class="space-y-5">
-          <div>
-            <label class="text-xs text-slate-500">Kategori</label>
-            <input
-              v-model="selectedSoal.category"
-              type="text"
-              disabled
-              class="w-full border rounded-lg px-3 py-2 text-sm mt-1 bg-slate-100"
-            />
-          </div>
-
-          <div>
-            <label class="text-xs text-slate-500">Subkategori</label>
-            <input
-              v-model="selectedSoal.sub_category"
-              type="text"
-              disabled
-              class="w-full border rounded-lg px-3 py-2 text-sm mt-1 bg-slate-100"
-            />
-          </div>
-
-          <div>
-            <label class="text-xs text-slate-500">Pertanyaan</label>
-            <textarea
-              v-model="selectedSoal.question"
-              rows="4"
-              class="w-full border rounded-lg px-3 py-2 text-sm mt-1"
-            ></textarea>
-          </div>
-
-          <div>
-            <label class="text-xs text-slate-500">Tingkat Kesulitan</label>
-            <select
-              v-model="selectedSoal.difficulty"
-              class="w-full border rounded-lg px-3 py-2 text-sm mt-1"
-            >
-              <option value="">Pilih Kesulitan</option>
-              <option value="Easy">Easy</option>
-              <option value="Medium">Medium</option>
-              <option value="Hard">Hard</option>
-            </select>
-          </div>
-
-          <div v-if="selectedSoal.options">
-            <label class="text-xs text-slate-500 block mb-2">
-              Opsi Jawaban
-            </label>
-
-            <div
-              v-for="(opt, i) in selectedSoal.options"
-              :key="i"
-              class="flex items-center gap-3 mb-3"
-            >
-              <span class="w-6 font-semibold text-sm">
-                {{ opt.label }}
-              </span>
-
-              <input
-                v-model="opt.text"
-                type="text"
-                class="flex-1 border rounded-lg px-3 py-2 text-sm"
-              />
-
-              <template v-if="selectedSoal.category !== 'TKP'">
-                <input
-                  type="radio"
-                  :value="opt.label"
-                  v-model="selectedSoal.correct_answer"
-                />
-              </template>
-
-              <template v-else>
-                <input
-                  v-model.number="opt.score"
-                  type="number"
-                  min="1"
-                  max="5"
-                  class="w-16 border rounded-lg px-2 py-1 text-sm"
-                />
-              </template>
-            </div>
-          </div>
-
-          <div>
-            <label class="text-xs text-slate-500">Pembahasan</label>
-            <textarea
-              v-model="selectedSoal.explanation"
-              rows="3"
-              class="w-full border rounded-lg px-3 py-2 text-sm mt-1"
-            ></textarea>
-          </div>
-
-          <div>
-            <label class="text-xs text-slate-500">Status</label>
-            <select
-              v-model="selectedSoal.status"
-              class="w-full border rounded-lg px-3 py-2 text-sm mt-1"
-            >
-              <option value="aktif">Aktif</option>
-              <option value="nonaktif">Nonaktif</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="flex justify-end gap-3 mt-8">
-          <button
-            @click="showEditModal = false"
-            class="px-4 py-2 text-sm border rounded-lg"
-          >
-            Batal
-          </button>
-
-          <button
-            @click="updateSoal"
-            class="px-5 py-2 text-sm bg-indigo-600 text-white rounded-lg"
-          >
-            Simpan
-          </button>
-        </div>
-      </div>
-    </div>
+    <BaseToast v-model="showToast" :type="toastType" :message="toastMessage" />
 
     <div v-if="loading" class="text-center py-10">Loading...</div>
   </div>
@@ -315,6 +195,8 @@ import katex from "katex";
 import "katex/dist/katex.min.css";
 import { useRoute } from "vue-router";
 import api from "../../services/api";
+import BaseToast from "../Toast/BaseToast.vue";
+import EditModal from "../BankSoal/EditModal.vue";
 
 const route = useRoute();
 
@@ -323,6 +205,16 @@ const loading = ref(false);
 const showEditModal = ref(false);
 const selectedSoal = ref(null);
 const selectedCategory = ref("");
+const savingEdit = ref(false);
+const showToast = ref(false);
+const toastMessage = ref("");
+const toastType = ref("success");
+
+function showNotification(message, type = "success") {
+  toastMessage.value = message;
+  toastType.value = type;
+  showToast.value = true;
+}
 
 /* ================= FETCH ================= */
 async function fetchTryout() {
@@ -377,14 +269,25 @@ function badge(category) {
 
 /* ================= EDIT ================= */
 function openEditModal(soal) {
-  selectedSoal.value = { ...soal };
+  selectedSoal.value = JSON.parse(JSON.stringify(soal));
   showEditModal.value = true;
 }
 
-async function updateSoal() {
-  await api.put(`/soal/${selectedSoal.value.id}`, selectedSoal.value);
-  fetchTryout();
-  showEditModal.value = false;
+async function updateSoal(data) {
+  try {
+    savingEdit.value = true;
+    await api.put(`/soal/${data.id}`, data);
+    await fetchTryout();
+    showEditModal.value = false;
+    showNotification("Soal berhasil disimpan ke API.", "success");
+  } catch (error) {
+    showNotification(
+      error.response?.data?.message || "Gagal menyimpan perubahan soal.",
+      "error",
+    );
+  } finally {
+    savingEdit.value = false;
+  }
 }
 
 function renderLatex(text) {
