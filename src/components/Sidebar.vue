@@ -10,6 +10,7 @@ import {
   Database,
   Layers,
   Zap,
+  Trophy,
 } from "lucide-vue-next";
 
 const route = useRoute();
@@ -23,6 +24,7 @@ const icons: any = {
   database: Database,
   layers: Layers,
   zap: Zap,
+  trophy: Trophy,
 };
 
 const menus = [
@@ -33,6 +35,7 @@ const menus = [
   { name: "Bank Soal SKD", path: "/banksoal", icon: "database" },
   { name: "Buat Tryout", path: "/tryout-builder", icon: "layers" },
   { name: "Paket Top Up", path: "/topup-packages", icon: "zap" },
+  { name: "Peringkat", path: "/peringkat", icon: "trophy" },
   // { name: "Axios Test", path: "/axiostest", icon: "zap" },
 ];
 

@@ -14,6 +14,7 @@ import GoogleCallback from "../components/Auth/GoogleCallback.vue";
 import { clearAuthSession, redirectToUserApp } from "../utils/auth";
 import TopupPackages from "../components/Topup/TopupPackages.vue";
 import Accounts from "../components/Users/Accounts.vue";
+import Peringkat from "../components/Peringkat.vue";
 
 const routes = [
   {
@@ -79,6 +80,11 @@ const routes = [
   {
     path: "/accounts",
     component: Accounts,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: "/peringkat",
+    component: Peringkat,
     meta: { requiresAuth: true },
   },
   {
