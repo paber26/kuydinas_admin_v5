@@ -71,14 +71,16 @@ const resolveOrigin = (value) => {
   }
 }
 
-export const ADMIN_API_BASE_URL = trimTrailingSlash(
-  import.meta.env.VITE_API_BASE_URL || ""
-)
+const rawApiBaseUrl = trimTrailingSlash(import.meta.env.VITE_API_BASE_URL || "")
 
-export const BACKEND_ORIGIN = resolveOrigin(ADMIN_API_BASE_URL)
+export const BACKEND_ORIGIN = resolveOrigin(rawApiBaseUrl)
+
+export const ADMIN_API_BASE_URL = rawApiBaseUrl.endsWith('/admin')
+  ? rawApiBaseUrl
+  : `${BACKEND_ORIGIN}/api/admin`
 
 export const ADMIN_AUTH_API_BASE_URL = trimTrailingSlash(
-  import.meta.env.VITE_ADMIN_AUTH_API_BASE_URL || `${BACKEND_ORIGIN}/api/admin`
+  import.meta.env.VITE_ADMIN_AUTH_API_BASE_URL || ADMIN_API_BASE_URL
 )
 
 export const ADMIN_APP_URL = trimTrailingSlash(import.meta.env.VITE_ADMIN_APP_URL || currentOrigin)
