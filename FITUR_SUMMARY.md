@@ -117,7 +117,7 @@
 
 ## Integrasi API
 
-- Base URL via env: VITE_ADMIN_API_BASE_URL.
+- Base URL via env: VITE_API_BASE_URL.
 - Penanganan 401: hapus token/role dan redirect ke /login.
 - Contoh env: [.env.example](file:///Users/marchelinoraco/Documents/2026/kuy/kuydinas_admin_v5/.env.example)
 - Sumber: [services/api.js](file:///Users/marchelinoraco/Documents/2026/kuy/kuydinas_admin_v5/src/services/api.js)

@@ -72,7 +72,7 @@ const resolveOrigin = (value) => {
 }
 
 export const ADMIN_API_BASE_URL = trimTrailingSlash(
-  import.meta.env.VITE_ADMIN_API_BASE_URL || ""
+  import.meta.env.VITE_API_BASE_URL || ""
 )
 
 export const BACKEND_ORIGIN = resolveOrigin(ADMIN_API_BASE_URL)
