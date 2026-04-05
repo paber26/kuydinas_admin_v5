@@ -39,13 +39,12 @@ const menus = [
   // { name: "Axios Test", path: "/axiostest", icon: "zap" },
 ];
 
-// Tutup sidebar mobile ketika route berubah
-watch(
-  () => route.fullPath,
-  () => {
-    document.body.classList.remove("sidebar-open");
-  },
-);
+const props = defineProps({
+  isHidden: Boolean,
+});
+
+const emit = defineEmits(["toggle"]);
+
 
 const logout = () => {
   localStorage.removeItem("token");
@@ -54,7 +53,13 @@ const logout = () => {
 </script>
 
 <template>
-  <aside class="sidebar w-72 bg-white border-r border-slate-200 flex flex-col">
+  <aside
+    class="sidebar bg-white border-r border-slate-200 flex flex-col"
+    :class="[
+      isHidden ? 'w-0 -translate-x-full md:w-0' : 'w-72 translate-x-0',
+      'fixed md:static inset-y-0 left-0 z-50',
+    ]"
+  >
     <!-- Logo -->
     <div class="p-5 border-b border-slate-100 flex items-center gap-3">
       <img src="/src/assets/logo-kuydinas.png" class="w-10 h-10" />
@@ -98,26 +103,19 @@ const logout = () => {
   </aside>
 </template>
 
-<style>
+<style scoped>
 .sidebar {
-  transition: transform 0.25s ease;
+  transition:
+    width 0.3s ease,
+    transform 0.3s ease;
+  overflow: hidden;
 }
 
-/* mobile sidebar */
 @media (max-width: 768px) {
-  body:not(.sidebar-open) .sidebar {
-    display: none;
-  }
-
-  body.sidebar-open .sidebar {
-    display: block;
+  .sidebar {
+    width: 18rem; /* 72px * 4 = 288px = 18rem */
     position: fixed;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    z-index: 50;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-    background: white;
   }
 }
 </style>

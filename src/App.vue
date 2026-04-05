@@ -4,10 +4,11 @@
     <router-view v-if="route.meta.authPage" />
 
     <!-- ADMIN LAYOUT -->
-    <div v-else class="flex flex-1">
-      <Sidebar />
+    <div v-else class="flex flex-1 overflow-hidden relative">
+      <Sidebar :is-hidden="isSidebarHidden" @toggle="toggleSidebar" />
 
-      <div class="flex-1">
+      <div class="flex-1 flex flex-col min-w-0 bg-slate-50 transition-all duration-300">
+
         <!-- HEADER -->
         <header
           class="bg-white border-b border-slate-200 p-4 flex items-center justify-between"
@@ -15,8 +16,8 @@
           <div class="flex items-center gap-3">
             <button
               id="mobileMenuBtn"
-              class="md:hidden p-2 rounded-md bg-slate-100"
-              @click="toggleMobileMenu"
+              class="p-2 rounded-md bg-slate-100 hover:bg-slate-200 transition-colors"
+              @click="toggleSidebar"
             >
               ☰
             </button>
@@ -60,11 +61,10 @@ import Footer from "./components/Footer.vue";
 
 const route = useRoute();
 
-const mobileOpen = ref(false);
+const isSidebarHidden = ref(false);
 
-function toggleMobileMenu() {
-  mobileOpen.value = !mobileOpen.value;
-  document.body.classList.toggle("sidebar-open", mobileOpen.value);
+function toggleSidebar() {
+  isSidebarHidden.value = !isSidebarHidden.value;
 }
 
 function handleResize() {
