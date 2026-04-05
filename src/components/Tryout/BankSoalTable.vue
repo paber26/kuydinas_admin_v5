@@ -3,18 +3,23 @@
     <table class="w-full text-sm border rounded-xl overflow-hidden">
       <thead class="bg-slate-100 text-slate-700">
         <tr>
+          <th class="px-4 py-3 text-center w-12 text-slate-500 font-semibold">No.</th>
           <th class="px-4 py-3 text-left">Kategori</th>
           <th class="px-4 py-3 text-left">Pertanyaan</th>
+          <th class="px-4 py-3 text-left w-32">Tanggal</th>
           <th class="px-4 py-3 text-left">Aksi</th>
         </tr>
       </thead>
 
       <tbody>
         <tr
-          v-for="item in bankSoal"
+          v-for="(item, index) in bankSoal"
           :key="item.id"
           class="border-t hover:bg-purple-50 transition"
         >
+          <td class="px-4 py-3 text-center text-slate-500 font-medium">
+            {{ index + 1 }}
+          </td>
           <td class="px-4 py-3">
             <span
               class="px-3 py-1 text-xs font-medium rounded-full"
@@ -26,6 +31,10 @@
 
           <td class="px-4 py-3 max-w-lg truncate">
             {{ item.question }}
+          </td>
+
+          <td class="px-4 py-3 text-xs text-slate-500 whitespace-nowrap">
+            {{ item.created_at ? new Date(item.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-' }}
           </td>
 
           <td class="px-4 py-3">
