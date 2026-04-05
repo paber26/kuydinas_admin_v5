@@ -179,7 +179,7 @@
       v-model="showEditModal"
       :soal="selectedSoal"
       :saving="savingEdit"
-      submit-label="Simpan ke API"
+      submit-label="Simpan"
       @update="updateSoal"
     />
 

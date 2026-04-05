@@ -67,11 +67,31 @@ export function renderRichHtmlWithLatex(html) {
     return "";
   }
 
-  return normalizedHtml.replace(/\$(.*?)\$/g, (_, formula) => {
+  // Regex to match:
+  // 1. $$ ... $$ (display)
+  // 2. \[ ... \] (display)
+  // 3. \( ... \) (inline)
+  // 4. $ ... $ (inline)
+  // 5. <span class="math-tex"> ... </span>
+  const regex = /(?:\$\$([\s\S]*?)\$\$|\\\[([\s\S]*?)\\\]|\\\(([\s\S]*?)\\\)|\$([^$]+?)\$|<span class="math-tex">([\s\S]*?)<\/span>)/g;
+
+  return normalizedHtml.replace(regex, (match, d1, d2, i1, i2, s1) => {
+    let formula = "";
+    let isDisplay = false;
+
+    if (d1 !== undefined) { formula = d1; isDisplay = true; }
+    else if (d2 !== undefined) { formula = d2; isDisplay = true; }
+    else if (i1 !== undefined) { formula = i1; isDisplay = false; }
+    else if (i2 !== undefined) { formula = i2; isDisplay = false; }
+    else if (s1 !== undefined) { formula = s1; isDisplay = false; }
+
     try {
-      return katex.renderToString(formula, { throwOnError: false });
+      return katex.renderToString(formula.trim(), {
+        throwOnError: false,
+        displayMode: isDisplay,
+      });
     } catch {
-      return formula;
+      return match;
     }
   });
 }
