@@ -86,7 +86,13 @@ export function renderRichHtmlWithLatex(html) {
     else if (s1 !== undefined) { formula = s1; isDisplay = false; }
 
     try {
-      return katex.renderToString(formula.trim(), {
+      const decodedFormula = formula
+        .replace(/&amp;/g, "&")
+        .replace(/&lt;/g, "<")
+        .replace(/&gt;/g, ">")
+        .replace(/&nbsp;/g, " ");
+
+      return katex.renderToString(decodedFormula.trim(), {
         throwOnError: false,
         displayMode: isDisplay,
       });
