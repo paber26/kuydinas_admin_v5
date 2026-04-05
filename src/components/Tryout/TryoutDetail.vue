@@ -106,7 +106,7 @@
 
           <!-- Pertanyaan -->
           <div
-            class="text-sm text-slate-800 whitespace-pre-line mb-4"
+            class="text-sm text-slate-800 whitespace-pre-line mb-4 rich-preview ck-content"
             v-html="renderLatex(soal.question)"
           ></div>
 
@@ -120,7 +120,7 @@
               <div class="flex gap-2 flex-1">
                 <span class="font-semibold">{{ opt.label }}.</span>
                 <span
-                  class="whitespace-pre-line"
+                  class="whitespace-pre-line rich-preview ck-content"
                   v-html="renderLatex(opt.text)"
                 ></span>
               </div>
@@ -167,7 +167,7 @@
           <div v-if="soal.explanation" class="border-t pt-4 mt-4">
             <p class="text-xs text-slate-500 mb-1">Pembahasan</p>
             <div
-              class="text-sm text-slate-700 whitespace-pre-line"
+              class="text-sm text-slate-700 whitespace-pre-line rich-preview ck-content"
               v-html="renderLatex(soal.explanation)"
             ></div>
           </div>

@@ -15,6 +15,12 @@ import {
   Link,
   List,
   Paragraph,
+  Table,
+  TableCaption,
+  TableCellProperties,
+  TableColumnResize,
+  TableProperties,
+  TableToolbar,
   Underline,
   Undo,
 } from "ckeditor5";
@@ -38,6 +44,12 @@ BankSoalEditor.builtinPlugins = [
   ImageResize,
   ImageUpload,
   ImageTextAlternative,
+  Table,
+  TableCaption,
+  TableCellProperties,
+  TableColumnResize,
+  TableProperties,
+  TableToolbar,
   Undo,
 ];
 
@@ -54,6 +66,7 @@ BankSoalEditor.defaultConfig = {
       "underline",
       "link",
       "uploadImage",
+      "insertTable",
       "|",
       "bulletedList",
       "numberedList",
@@ -94,6 +107,15 @@ BankSoalEditor.defaultConfig = {
       "toggleImageCaption",
       "imageTextAlternative",
     ],
+  },
+  table: {
+    contentToolbar: [
+      "tableColumn",
+      "tableRow",
+      "mergeTableCells",
+      "tableProperties",
+      "tableCellProperties"
+    ]
   },
   language: "id",
 };

@@ -232,6 +232,7 @@ const editorConfig = {
     "underline",
     "link",
     "imageUpload",
+    "insertTable",
     "|",
     "bulletedList",
     "numberedList",
@@ -274,6 +275,15 @@ const editorConfig = {
       "toggleImageCaption",
       "imageTextAlternative",
     ],
+  },
+  table: {
+    contentToolbar: [
+      "tableColumn",
+      "tableRow",
+      "mergeTableCells",
+      "tableProperties",
+      "tableCellProperties"
+    ]
   },
 };
 
@@ -625,5 +635,19 @@ async function submitForm() {
   clear: both;
   content: "";
   display: block;
+}
+
+.rich-preview table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1rem 0;
+}
+
+.rich-preview table, .rich-preview th, .rich-preview td {
+  border: 1px solid #cbd5e1;
+}
+
+.rich-preview th, .rich-preview td {
+  padding: 0.5rem;
 }
 </style>
