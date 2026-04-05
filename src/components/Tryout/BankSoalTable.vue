@@ -34,7 +34,7 @@
           </td>
 
           <td class="px-4 py-3 text-xs text-slate-500 whitespace-nowrap">
-            {{ item.created_at ? new Date(item.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-' }}
+            {{ item.created_at ? new Date(item.created_at).toLocaleString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '-' }}
           </td>
 
           <td class="px-4 py-3">
