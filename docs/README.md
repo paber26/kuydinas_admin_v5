@@ -70,7 +70,13 @@ Fitur:
 - membuat paket tryout baru
 - menentukan tipe tryout: gratis atau premium
 - mengatur durasi, kuota, harga, diskon, dan target jumlah soal per kategori
-- mengatur masa berlaku tryout gratis dalam hitungan hari
+- mengatur masa akses tryout gratis:
+  - `free_start_date` (opsional) → akses dibuka mulai tanggal ini
+  - `free_valid_until` (opsional) → akses ditutup lewat tanggal ini
+  - `free_valid_days` (legacy) → durasi akses saat user registrasi
+- mengisi link informasi untuk tryout gratis:
+  - `info_ig` (link postingan IG untuk misi follow/share)
+  - `info_wa` (link WhatsApp/Telegram/grup info)
 - melihat detail tryout dan komposisi soal
 - menambahkan soal dari bank soal ke tryout
 - melepas soal dari tryout
@@ -132,6 +138,7 @@ Admin bergantung pada fitur API berikut:
 - CRUD soal
 - upload gambar soal
 - CRUD tryout dan pengelolaan soal dalam tryout
+- ranking tryout untuk admin (mis. `GET /api/admin/tryouts/{id}/ranking`)
 - CRUD paket top up
 - daftar dan update akun user
-- ringkasan transaksi top up
+- ringkasan transaksi top up (mis. `GET /api/admin/topup-transactions/summary`)
