@@ -21,7 +21,7 @@
 
 - KPI dari API admin: total akun, pengguna aktif, total tryout, total soal, paket topup aktif, breakdown soal TWK/TIU/TKP.
 - Aktivitas terbaru: tryout terbaru, soal terbaru, paket topup terbaru.
-- KPI tambahan (opsional): total transaksi gross (paid) via endpoint summary (jika tersedia).
+- KPI tambahan (opsional): total transaksi gross (paid) via endpoint summary `/topup-transactions/summary` (jika tersedia).
 - Grafik pendaftar per bulan tetap tampil sebagai placeholder jika data belum tersedia.
 - Sumber: [Dashboard.vue](file:///Users/marchelinoraco/Documents/2026/kuy/kuydinas_admin_v5/src/components/Dashboard.vue)
 
@@ -39,6 +39,7 @@
 - Daftar Tryout: tampilkan meta (durasi, tipe, harga, kuota), ubah status Publish/Draft, hapus.
 - Publish tryout menggunakan endpoint publish khusus backend ketika status diubah ke Publish atau tombol Terbitkan ditekan.
 - Buat Tryout: isi judul, durasi, tipe (free/premium), kuota, target komposisi TWK/TIU/TKP, passing grade, harga/diskon.
+- Tryout gratis: dukung masa akses via `free_start_date` dan `free_valid_until`, plus link info via `info_ig` dan `info_wa`.
 - Detail Tryout: rangkum meta dan daftar soal; filter per kategori; edit isi soal inline.
 - Kelola Tryout:
   - Edit meta (tipe, harga, diskon) dan target komposisi.

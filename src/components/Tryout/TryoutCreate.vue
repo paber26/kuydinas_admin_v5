@@ -88,8 +88,6 @@
           </p>
         </div>
 
-
-
         <div v-if="form.type === 'free'">
           <label class="text-sm font-medium text-slate-700">
             Tanggal Berlaku Hingga
@@ -131,6 +129,19 @@
           />
           <p class="mt-1 text-xs text-slate-500">
             Link grup WhatsApp atau grup info. Boleh dikosongkan.
+          </p>
+        </div>
+
+        <div
+          v-else
+          class="md:col-span-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-4"
+        >
+          <p class="text-sm font-semibold text-emerald-800">
+            Masa akses tryout premium
+          </p>
+          <p class="mt-1 text-sm text-emerald-700">
+            Tryout premium otomatis memiliki masa akses tanpa batas, jadi tidak
+            perlu mengisi tanggal mulai atau tanggal berakhir.
           </p>
         </div>
       </div>
@@ -377,6 +388,7 @@ async function submitForm() {
       payload.free_valid_until = null;
       payload.info_ig = null;
       payload.info_wa = null;
+      // Premium selalu tanpa batas waktu akses.
     }
 
     // harga & diskon menggunakan satuan koin untuk semua tipe

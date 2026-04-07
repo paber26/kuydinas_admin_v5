@@ -80,12 +80,8 @@
           />
         </div>
 
-
-
         <div v-if="editMeta.type === 'free'">
-          <label class="text-sm text-slate-600">
-            Tanggal Berlaku Mulai
-          </label>
+          <label class="text-sm text-slate-600"> Tanggal Berlaku Mulai </label>
           <input
             v-model="editMeta.free_start_date"
             type="datetime-local"
@@ -97,9 +93,7 @@
         </div>
 
         <div v-if="editMeta.type === 'free'">
-          <label class="text-sm text-slate-600">
-            Tanggal Berlaku Hingga
-          </label>
+          <label class="text-sm text-slate-600"> Tanggal Berlaku Hingga </label>
           <input
             v-model="editMeta.free_valid_until"
             type="datetime-local"
@@ -111,9 +105,7 @@
         </div>
 
         <div v-if="editMeta.type === 'free'">
-          <label class="text-sm text-slate-600">
-            Link Postingan IG
-          </label>
+          <label class="text-sm text-slate-600"> Link Postingan IG </label>
           <input
             v-model="editMeta.info_ig"
             type="url"
@@ -213,7 +205,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import { useRoute } from "vue-router";
 
 import api from "../../services/api.js";
@@ -267,6 +259,22 @@ function showNotification(msg, type = "success") {
   toastType.value = type;
   showToast.value = true;
 }
+
+watch(
+  () => editMeta.value.type,
+  (nextType, prevType) => {
+    if (!tryout.value) return;
+    if (tryout.value.status !== "publish") return;
+    if (tryout.value.type !== "premium") return;
+    if (nextType !== "free") return;
+
+    editMeta.value.type = prevType || "premium";
+    showNotification(
+      "Tryout premium yang sudah publish tidak dapat diubah menjadi gratis.",
+      "error",
+    );
+  },
+);
 
 /* ================= FETCH TRYOUT ================= */
 
@@ -342,12 +350,26 @@ async function updateTarget() {
 
 async function updateMeta() {
   try {
+    if (
+      tryout.value?.status === "publish" &&
+      tryout.value?.type === "premium" &&
+      editMeta.value.type === "free"
+    ) {
+      editMeta.value.type = "premium";
+      showNotification(
+        "Tryout premium yang sudah publish tidak dapat diubah menjadi gratis.",
+        "error",
+      );
+      return;
+    }
+
     await api.put(`/tryouts/${tryoutId}`, {
       title: editMeta.value.title,
       duration: editMeta.value.duration,
 
       type: editMeta.value.type,
-      quota: editMeta.value.type === "free" ? (editMeta.value.quota || null) : null,
+      quota:
+        editMeta.value.type === "free" ? editMeta.value.quota || null : null,
 
       free_start_date:
         editMeta.value.type === "free"
@@ -358,13 +380,9 @@ async function updateMeta() {
           ? editMeta.value.free_valid_until || null
           : null,
       info_ig:
-        editMeta.value.type === "free"
-          ? editMeta.value.info_ig || null
-          : null,
+        editMeta.value.type === "free" ? editMeta.value.info_ig || null : null,
       info_wa:
-        editMeta.value.type === "free"
-          ? editMeta.value.info_wa || null
-          : null,
+        editMeta.value.type === "free" ? editMeta.value.info_wa || null : null,
       price: editMeta.value.price,
       discount: editMeta.value.discount,
 
@@ -380,7 +398,8 @@ async function updateMeta() {
     tryout.value.title = editMeta.value.title;
     tryout.value.duration = editMeta.value.duration;
     tryout.value.type = editMeta.value.type;
-    tryout.value.quota = editMeta.value.type === "free" ? (editMeta.value.quota || null) : null;
+    tryout.value.quota =
+      editMeta.value.type === "free" ? editMeta.value.quota || null : null;
 
     tryout.value.free_start_date =
       editMeta.value.type === "free"
@@ -391,13 +410,9 @@ async function updateMeta() {
         ? editMeta.value.free_valid_until || null
         : null;
     tryout.value.info_ig =
-      editMeta.value.type === "free"
-        ? editMeta.value.info_ig || null
-        : null;
+      editMeta.value.type === "free" ? editMeta.value.info_ig || null : null;
     tryout.value.info_wa =
-      editMeta.value.type === "free"
-        ? editMeta.value.info_wa || null
-        : null;
+      editMeta.value.type === "free" ? editMeta.value.info_wa || null : null;
     tryout.value.price = editMeta.value.price;
     tryout.value.discount = editMeta.value.discount;
 
@@ -484,7 +499,32 @@ function toggleBankSoal() {
 
 function formatDateTimeInput(value) {
   if (!value) return "";
-  return String(value).replace(" ", "T").slice(0, 16);
+
+  const raw = String(value).trim();
+
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(raw)) {
+    return raw;
+  }
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+    return `${raw}T00:00`;
+  }
+
+  const parsed = new Date(raw);
+  if (!Number.isNaN(parsed.getTime())) {
+    const pad = (num) => String(num).padStart(2, "0");
+
+    return `${parsed.getFullYear()}-${pad(parsed.getMonth() + 1)}-${pad(parsed.getDate())}T${pad(
+      parsed.getHours(),
+    )}:${pad(parsed.getMinutes())}`;
+  }
+
+  const normalized = raw.replace(" ", "T");
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(normalized)) {
+    return normalized.slice(0, 16);
+  }
+
+  return "";
 }
 
 /* ================= BADGE ================= */
