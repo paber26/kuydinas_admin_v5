@@ -17,6 +17,75 @@
       </router-link>
     </div>
 
+    <div class="mb-4 flex flex-col gap-4 rounded-xl border border-slate-200 bg-white p-4">
+      <div>
+        <p class="text-sm font-semibold text-slate-700">Filter Data</p>
+        <p class="text-xs text-slate-500">
+          Saring tryout berdasarkan masa akses paket gratis.
+        </p>
+      </div>
+
+      <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div class="w-full">
+          <label class="mb-1 block text-xs font-medium text-slate-500">
+            Tipe Tryout
+          </label>
+          <select
+            v-model="filters.type"
+            class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700"
+          >
+            <option value="all">Semua tipe</option>
+            <option value="free">Gratis</option>
+            <option value="premium">Premium</option>
+          </select>
+        </div>
+
+        <div class="w-full">
+          <label class="mb-1 block text-xs font-medium text-slate-500">
+            Masa Akses
+          </label>
+          <select
+            v-model="filters.accessPeriod"
+            class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700"
+          >
+            <option value="all">Semua masa akses</option>
+            <option value="active">Sedang aktif</option>
+            <option value="upcoming">Akan datang</option>
+            <option value="expired">Sudah berakhir</option>
+            <option value="unlimited">Tanpa batas</option>
+          </select>
+        </div>
+
+        <div class="w-full">
+          <label class="mb-1 block text-xs font-medium text-slate-500">
+            Diskon
+          </label>
+          <select
+            v-model="filters.discount"
+            class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700"
+          >
+            <option value="all">Semua tryout</option>
+            <option value="discounted">Sedang diskon</option>
+            <option value="non_discounted">Tanpa diskon</option>
+          </select>
+        </div>
+
+        <div class="w-full">
+          <label class="mb-1 block text-xs font-medium text-slate-500">
+            Status Tryout
+          </label>
+          <select
+            v-model="filters.status"
+            class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700"
+          >
+            <option value="all">Semua status</option>
+            <option value="publish">Publish</option>
+            <option value="draft">Draft</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
     <!-- Table -->
     <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
       <table class="w-full text-sm">
@@ -38,7 +107,7 @@
 
         <tbody>
           <tr
-            v-for="(item, index) in tryouts"
+            v-for="(item, index) in filteredTryouts"
             :key="item.id"
             class="border-t hover:bg-slate-50"
           >
@@ -145,10 +214,10 @@
 
       <!-- Empty -->
       <div
-        v-if="tryouts.length === 0 && !loading"
+        v-if="filteredTryouts.length === 0 && !loading"
         class="text-center text-slate-400 py-10"
       >
-        Belum ada tryout yang dibuat
+        Belum ada tryout yang cocok dengan filter masa akses
       </div>
 
       <!-- Loading -->
@@ -163,12 +232,18 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { computed, ref, onMounted } from "vue";
 import api from "../../services/api.js";
 import BaseToast from "../Toast/BaseToast.vue";
 
 const tryouts = ref([]);
 const loading = ref(false);
+const filters = ref({
+  type: "all",
+  accessPeriod: "all",
+  discount: "all",
+  status: "all",
+});
 
 /* =========================
    TOAST
@@ -291,6 +366,85 @@ async function publishTryout(item) {
     showNotification(msg, "error");
   }
 }
+
+const parseDateTime = (value) => {
+  if (!value) return null;
+
+  const parsed = new Date(String(value).replace(" ", "T"));
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+};
+
+const isAccessActive = (item) => {
+  if (item.type !== "free") return true;
+
+  const now = new Date();
+  const start = parseDateTime(item.free_start_date);
+  const end = parseDateTime(item.free_valid_until);
+
+  if (!start && !end) return false;
+  if (start && now < start) return false;
+  if (end && now > end) return false;
+
+  return true;
+};
+
+const isAccessUpcoming = (item) => {
+  if (item.type !== "free") return false;
+
+  const now = new Date();
+  const start = parseDateTime(item.free_start_date);
+  return Boolean(start && now < start);
+};
+
+const isAccessExpired = (item) => {
+  if (item.type !== "free") return false;
+
+  const now = new Date();
+  const end = parseDateTime(item.free_valid_until);
+  return Boolean(end && now > end);
+};
+
+const isAccessUnlimited = (item) => {
+  if (item.type !== "free") return false;
+  return !item.free_start_date && !item.free_valid_until;
+};
+
+const filteredTryouts = computed(() => {
+  const selectedType = filters.value.type;
+  const selectedFilter = filters.value.accessPeriod;
+  const selectedDiscount = filters.value.discount;
+  const selectedStatus = filters.value.status;
+
+  return tryouts.value.filter((item) => {
+    if (selectedType !== "all" && item.type !== selectedType) {
+      return false;
+    }
+
+    if (selectedStatus !== "all" && item.status !== selectedStatus) {
+      return false;
+    }
+
+    const discountValue = Number(item.discount ?? 0);
+
+    if (selectedDiscount === "discounted" && discountValue <= 0) {
+      return false;
+    }
+
+    if (selectedDiscount === "non_discounted" && discountValue > 0) {
+      return false;
+    }
+
+    if (selectedFilter === "all") {
+      return true;
+    }
+
+    if (selectedFilter === "active") return isAccessActive(item);
+    if (selectedFilter === "upcoming") return isAccessUpcoming(item);
+    if (selectedFilter === "expired") return isAccessExpired(item);
+    if (selectedFilter === "unlimited") return isAccessUnlimited(item);
+    return true;
+  });
+});
 
 const formatTimeline = (start, end) => {
   if (!start && !end) return "Tanpa batas";
