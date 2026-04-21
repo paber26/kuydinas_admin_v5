@@ -37,6 +37,7 @@
             <option value="all">Semua tipe</option>
             <option value="free">Gratis</option>
             <option value="premium">Premium</option>
+            <option value="regular">Regular</option>
           </select>
         </div>
 
@@ -124,14 +125,14 @@
 
             <td class="px-4 py-3">
               <span
-                class="px-2 py-1 rounded-full text-xs"
-                :class="
-                  item.type === 'free'
-                    ? 'bg-green-100 text-green-600'
-                    : 'bg-purple-100 text-purple-600'
-                "
+                class="px-2 py-1 rounded-full text-xs capitalize"
+                :class="{
+                  'bg-green-100 text-green-600': item.type === 'free',
+                  'bg-purple-100 text-purple-600': item.type === 'premium',
+                  'bg-blue-100 text-blue-600': item.type === 'regular'
+                }"
               >
-                {{ item.type === "free" ? "Gratis" : "Premium" }}
+                {{ item.type === "free" ? "Gratis" : item.type }}
               </span>
             </td>
 

@@ -130,7 +130,7 @@
           <p class="text-sm font-semibold text-slate-700">Peringkat {{ p.rank }}</p>
           <p class="mt-2 text-lg font-bold text-slate-900">{{ p.name }}</p>
           <p class="text-xs text-slate-500">{{ p.region }}</p>
-          <p class="mt-3 text-xl font-bold">{{ p.total }}</p>
+          <p class="mt-3 text-xl font-bold">{{ Number(p.twk || 0) + Number(p.tiu || 0) + Number(p.tkp || 0) }}</p>
         </div>
 
         <div
@@ -207,7 +207,7 @@
                 <td class="px-3 py-2 text-center">{{ row.twk }}</td>
                 <td class="px-3 py-2 text-center">{{ row.tiu }}</td>
                 <td class="px-3 py-2 text-center">{{ row.tkp }}</td>
-                <td class="px-3 py-2 text-center font-bold">{{ row.total }}</td>
+                <td class="px-3 py-2 text-center font-bold">{{ Number(row.twk || 0) + Number(row.tiu || 0) + Number(row.tkp || 0) }}</td>
               </tr>
             </tbody>
           </table>

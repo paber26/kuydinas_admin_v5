@@ -68,6 +68,7 @@
           >
             <option value="free">Gratis</option>
             <option value="premium">Premium</option>
+            <option value="regular">Regular</option>
           </select>
         </div>
 
@@ -265,12 +266,12 @@ watch(
   (nextType, prevType) => {
     if (!tryout.value) return;
     if (tryout.value.status !== "publish") return;
-    if (tryout.value.type !== "premium") return;
+    if (tryout.value.type === "free") return;
     if (nextType !== "free") return;
 
     editMeta.value.type = prevType || "premium";
     showNotification(
-      "Tryout premium yang sudah publish tidak dapat diubah menjadi gratis.",
+      "Tryout berbayar yang sudah publish tidak dapat diubah menjadi gratis.",
       "error",
     );
   },
@@ -352,12 +353,12 @@ async function updateMeta() {
   try {
     if (
       tryout.value?.status === "publish" &&
-      tryout.value?.type === "premium" &&
+      tryout.value?.type !== "free" &&
       editMeta.value.type === "free"
     ) {
       editMeta.value.type = "premium";
       showNotification(
-        "Tryout premium yang sudah publish tidak dapat diubah menjadi gratis.",
+        "Tryout berbayar yang sudah publish tidak dapat diubah menjadi gratis.",
         "error",
       );
       return;

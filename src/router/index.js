@@ -15,6 +15,10 @@ import { clearAuthSession, redirectToUserApp } from "../utils/auth";
 import TopupPackages from "../components/Topup/TopupPackages.vue";
 import Accounts from "../components/Users/Accounts.vue";
 import Peringkat from "../components/Peringkat.vue";
+import ProgressUser from "../components/ProgressUser.vue";
+import RekapanTryout from "../components/RekapanTryout.vue";
+import RekapStatusTryout from "../components/RekapStatusTryout.vue";
+import DetailPesertaTryout from "../components/DetailPesertaTryout.vue";
 
 const routes = [
   {
@@ -85,6 +89,31 @@ const routes = [
   {
     path: "/peringkat",
     component: Peringkat,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: "/progress-user",
+    component: ProgressUser,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: "/rekapan-tryout",
+    component: RekapanTryout,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: "/rekap-status-tryout",
+    component: RekapStatusTryout,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: "/rekap-status-tryout/:id/peserta",
+    component: DetailPesertaTryout,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: "/pendaftar-belum-mulai",
+    component: RekapanTryout,
     meta: { requiresAuth: true },
   },
   {

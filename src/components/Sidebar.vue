@@ -11,6 +11,7 @@ import {
   Layers,
   Zap,
   Trophy,
+  Activity,
 } from "lucide-vue-next";
 
 const route = useRoute();
@@ -25,6 +26,7 @@ const icons: any = {
   layers: Layers,
   zap: Zap,
   trophy: Trophy,
+  activity: Activity,
 };
 
 const menus = [
@@ -36,6 +38,9 @@ const menus = [
   { name: "Buat Tryout", path: "/tryout-builder", icon: "layers" },
   { name: "Paket Top Up", path: "/topup-packages", icon: "zap" },
   { name: "Peringkat", path: "/peringkat", icon: "trophy" },
+  { name: "User Aktif", path: "/progress-user", icon: "activity" },
+  { name: "Rekapan Tryout", path: "/rekapan-tryout", icon: "document" },
+  { name: "Rekap Status Tryout", path: "/rekap-status-tryout", icon: "document" },
   // { name: "Axios Test", path: "/axiostest", icon: "zap" },
 ];
 

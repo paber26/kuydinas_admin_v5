@@ -57,6 +57,7 @@
           >
             <option value="free">Gratis</option>
             <option value="premium">Premium</option>
+            <option value="regular">Regular</option>
           </select>
         </div>
 
@@ -137,10 +138,10 @@
           class="md:col-span-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-4"
         >
           <p class="text-sm font-semibold text-emerald-800">
-            Masa akses tryout premium
+            Masa akses tryout premium / regular
           </p>
           <p class="mt-1 text-sm text-emerald-700">
-            Tryout premium otomatis memiliki masa akses tanpa batas, jadi tidak
+            Tryout premium dan regular otomatis memiliki masa akses tanpa batas, jadi tidak
             perlu mengisi tanggal mulai atau tanggal berakhir.
           </p>
         </div>
