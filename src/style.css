@@ -1,5 +1,16 @@
 @import "tailwindcss";
 
+/* KaTeX: prevent long formulas from breaking layout */
+.katex-display {
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.katex-display > .katex {
+  white-space: nowrap;
+}
+
 /* 
 .router-link-exact-active {
   @apply bg-purple-100 text-purple-600;

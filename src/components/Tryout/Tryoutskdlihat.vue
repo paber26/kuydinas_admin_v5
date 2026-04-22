@@ -135,7 +135,7 @@
         <div class="flex items-start justify-between gap-4">
           <div class="flex-1">
             <div class="text-sm text-slate-500">Soal Nomor {{ idx + 1 }}</div>
-            <div class="mt-2 text-slate-800" v-html="q.question"></div>
+            <div class="mt-2 text-slate-800 rich-preview ck-content" v-html="renderLatex(q.question)"></div>
           </div>
         </div>
 
@@ -153,9 +153,7 @@
               <div class="flex items-center justify-between">
                 <div>
                   <span class="font-medium text-slate-800">{{ opt.key }}.</span>
-                  <span class="font-normal text-slate-800">
-                    {{ opt.text }}</span
-                  >
+                  <span class="font-normal text-slate-800 rich-preview ck-content" v-html="renderLatex(opt.text)"></span>
                 </div>
                 <div class="text-sm text-slate-500">
                   Poin: {{ opt.point ?? 0 }}
@@ -168,7 +166,7 @@
             <div class="text-xs text-slate-500">Pembahasan</div>
             <div
               class="mt-2 text-sm text-slate-700"
-              v-html="q.explanation || '-'"
+              v-html="renderLatex(q.explanation || '-')"
             />
           </div>
         </div>
@@ -189,8 +187,10 @@
 
 <script setup>
 import { ref, onMounted } from "vue";
+import "katex/dist/katex.min.css";
 import { useRoute, useRouter } from "vue-router";
 import api from "../../services/api.js";
+import { renderRichHtmlWithLatex } from "../../utils/richText.js";
 
 const route = useRoute();
 const router = useRouter();
@@ -200,6 +200,10 @@ console.log("Tryout ID from route:", eid);
 const info = ref({});
 const questions = ref([]);
 const loading = ref(false);
+
+function renderLatex(text) {
+  return renderRichHtmlWithLatex(text);
+}
 
 async function fetchInfoSKD() {
   try {
