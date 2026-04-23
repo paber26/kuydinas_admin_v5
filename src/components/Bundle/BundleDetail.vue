@@ -181,7 +181,7 @@ function getWhatsAppLink(phone) {
 async function loadBundle() {
   loading.value = true;
   try {
-    const response = await api.get(`/admin/bundles/${route.params.id}`);
+    const response = await api.get(`/bundles/${route.params.id}`);
     bundle.value = response.data?.data || null;
   } catch (err) {
     console.error("Gagal memuat bundle:", err);
@@ -194,7 +194,7 @@ async function loadBundle() {
 async function loadTransactions() {
   loadingTrx.value = true;
   try {
-    const response = await api.get(`/admin/bundles/${route.params.id}/transactions`);
+    const response = await api.get(`/bundles/${route.params.id}/transactions`);
     transactions.value = Array.isArray(response.data?.data) ? response.data.data : [];
   } catch (err) {
     console.error("Gagal memuat transaksi:", err);

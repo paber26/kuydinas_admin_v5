@@ -177,7 +177,7 @@ async function loadBundles() {
   errorMessage.value = "";
 
   try {
-    const response = await api.get("/admin/bundles");
+    const response = await api.get("/bundles");
     bundles.value = Array.isArray(response.data?.data) ? response.data.data : [];
   } catch (err) {
     console.error("Gagal memuat bundle:", err);
@@ -191,7 +191,7 @@ async function confirmDelete(bundle) {
   if (!confirm(`Hapus bundle "${bundle.name}"?`)) return;
 
   try {
-    await api.delete(`/admin/bundles/${bundle.id}`);
+    await api.delete(`/bundles/${bundle.id}`);
     bundles.value = bundles.value.filter((b) => b.id !== bundle.id);
   } catch (err) {
     const msg = err?.response?.data?.message || "Gagal menghapus bundle.";

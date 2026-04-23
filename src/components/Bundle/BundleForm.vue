@@ -144,19 +144,43 @@
 
         <section class="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm sm:p-5 space-y-4">
           <div class="flex items-center justify-between">
-            <h2 class="text-sm font-semibold text-slate-700">Pilih Tryout *</h2>
-            <span class="text-xs text-slate-400">{{ selectedTryoutIds.length }} dipilih</span>
+            <div>
+              <h2 class="text-sm font-semibold text-slate-700">Pilih Tryout *</h2>
+              <p class="text-[11px] text-slate-400 mt-0.5">Hanya menampilkan tryout yang sudah publish</p>
+            </div>
+            <span
+              class="rounded-full bg-indigo-100 px-2.5 py-0.5 text-xs font-semibold text-indigo-700"
+            >{{ selectedTryoutIds.length }} dipilih</span>
+          </div>
+
+          <!-- Search & filter -->
+          <div class="flex gap-2">
+            <input
+              v-model="tryoutSearch"
+              type="text"
+              placeholder="Cari nama tryout..."
+              class="flex-1 rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+            >
+            <select
+              v-model="tryoutTypeFilter"
+              class="rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+            >
+              <option value="all">Semua tipe</option>
+              <option value="free">Gratis</option>
+              <option value="premium">Premium</option>
+              <option value="regular">Regular</option>
+            </select>
           </div>
 
           <div v-if="loadingTryouts" class="h-20 animate-pulse rounded-xl bg-slate-100"></div>
 
-          <div v-else-if="!availableTryouts.length" class="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-center text-sm text-slate-500">
-            Belum ada tryout yang tersedia.
+          <div v-else-if="!filteredTryouts.length" class="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-center text-sm text-slate-500">
+            {{ availableTryouts.length === 0 ? 'Belum ada tryout yang publish.' : 'Tidak ada tryout yang cocok.' }}
           </div>
 
           <div v-else class="max-h-72 overflow-y-auto rounded-xl border border-slate-200 divide-y divide-slate-100">
             <label
-              v-for="tryout in availableTryouts"
+              v-for="tryout in filteredTryouts"
               :key="tryout.id"
               class="flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors hover:bg-slate-50"
               :class="{ 'bg-indigo-50/50': selectedTryoutIds.includes(tryout.id) }"
@@ -169,10 +193,36 @@
               >
               <div class="min-w-0 flex-1">
                 <p class="text-sm font-medium text-slate-800 truncate">{{ tryout.title }}</p>
-                <p class="text-[11px] text-slate-400">{{ tryout.type }} • {{ tryout.duration }} menit</p>
+                <p class="text-[11px] text-slate-400">
+                  <span
+                    class="inline-block rounded-full px-1.5 py-0.5 mr-1"
+                    :class="{
+                      'bg-green-100 text-green-700': tryout.type === 'free',
+                      'bg-purple-100 text-purple-700': tryout.type === 'premium',
+                      'bg-blue-100 text-blue-700': tryout.type === 'regular',
+                    }"
+                  >{{ tryout.type }}</span>
+                  {{ tryout.duration }} menit
+                  <span v-if="tryout.soals_count != null"> • {{ tryout.soals_count }} soal</span>
+                </p>
               </div>
-              <span class="shrink-0 text-xs text-slate-400">ID: {{ tryout.id }}</span>
+              <span class="shrink-0 text-[10px] text-slate-400">#{{ tryout.id }}</span>
             </label>
+          </div>
+
+          <!-- Select all / clear -->
+          <div v-if="filteredTryouts.length" class="flex gap-3">
+            <button
+              type="button"
+              @click="selectAllFiltered"
+              class="text-xs text-indigo-600 hover:underline"
+            >Pilih semua ({{ filteredTryouts.length }})</button>
+            <span class="text-slate-300">|</span>
+            <button
+              type="button"
+              @click="selectedTryoutIds = []"
+              class="text-xs text-slate-500 hover:underline"
+            >Hapus pilihan</button>
           </div>
         </section>
 
@@ -231,13 +281,31 @@ const form = ref({
 
 const availableTryouts = ref([]);
 const selectedTryoutIds = ref([]);
+const tryoutSearch = ref("");
+const tryoutTypeFilter = ref("all");
+
+const filteredTryouts = computed(() => {
+  return availableTryouts.value.filter((t) => {
+    const matchSearch = !tryoutSearch.value || t.title.toLowerCase().includes(tryoutSearch.value.toLowerCase());
+    const matchType = tryoutTypeFilter.value === "all" || t.type === tryoutTypeFilter.value;
+    return matchSearch && matchType;
+  });
+});
+
+function selectAllFiltered() {
+  const ids = filteredTryouts.value.map((t) => t.id);
+  const merged = [...new Set([...selectedTryoutIds.value, ...ids])];
+  selectedTryoutIds.value = merged;
+}
 
 async function loadTryouts() {
   loadingTryouts.value = true;
   try {
-    const response = await api.get("/admin/tryouts");
+    const response = await api.get("/tryouts");
     const data = response.data?.data || response.data || [];
-    availableTryouts.value = Array.isArray(data) ? data : [];
+    const all = Array.isArray(data) ? data : [];
+    // Hanya tampilkan tryout yang sudah publish
+    availableTryouts.value = all.filter((t) => t.status === "publish");
   } catch (err) {
     console.error("Gagal memuat tryout:", err);
   } finally {
@@ -250,7 +318,7 @@ async function loadBundle() {
 
   loadingInit.value = true;
   try {
-    const response = await api.get(`/admin/bundles/${route.params.id}`);
+    const response = await api.get(`/bundles/${route.params.id}`);
     const bundle = response.data?.data;
 
     if (bundle) {
@@ -306,9 +374,9 @@ async function handleSubmit() {
 
   try {
     if (isEdit.value) {
-      await api.put(`/admin/bundles/${route.params.id}`, payload);
+      await api.put(`/bundles/${route.params.id}`, payload);
     } else {
-      await api.post("/admin/bundles", payload);
+      await api.post("/bundles", payload);
     }
 
     router.push("/bundles");
