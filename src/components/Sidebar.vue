@@ -12,6 +12,7 @@ import {
   Zap,
   Trophy,
   Activity,
+  Package,
 } from "lucide-vue-next";
 
 const route = useRoute();
@@ -27,6 +28,7 @@ const icons: any = {
   zap: Zap,
   trophy: Trophy,
   activity: Activity,
+  package: Package,
 };
 
 const menus = [
@@ -37,6 +39,7 @@ const menus = [
   { name: "Bank Soal SKD", path: "/banksoal", icon: "database" },
   { name: "Buat Tryout", path: "/tryout-builder", icon: "layers" },
   { name: "Paket Top Up", path: "/topup-packages", icon: "zap" },
+  { name: "Manajemen Bundle", path: "/bundles", icon: "package" },
   { name: "Peringkat", path: "/peringkat", icon: "trophy" },
   { name: "User Aktif", path: "/progress-user", icon: "activity" },
   { name: "Rekapan Tryout", path: "/rekapan-tryout", icon: "document" },

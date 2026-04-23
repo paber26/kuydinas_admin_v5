@@ -126,6 +126,26 @@ const routes = [
     component: Tryoutskdedit,
     meta: { requiresAuth: true },
   },
+  {
+    path: "/bundles",
+    component: () => import("../components/Bundle/BundleList.vue"),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: "/bundles/create",
+    component: () => import("../components/Bundle/BundleForm.vue"),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: "/bundles/:id/edit",
+    component: () => import("../components/Bundle/BundleForm.vue"),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: "/bundles/:id",
+    component: () => import("../components/Bundle/BundleDetail.vue"),
+    meta: { requiresAuth: true },
+  },
 ];
 
 const router = createRouter({
