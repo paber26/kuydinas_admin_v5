@@ -66,14 +66,44 @@
               >
             </div>
 
-            <div>
-              <label class="block text-xs font-medium text-slate-600 mb-1">Cover Image URL</label>
-              <input
-                v-model="form.cover_image"
-                type="text"
-                placeholder="https://..."
-                class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+            <div class="sm:col-span-2">
+              <label class="block text-xs font-medium text-slate-600 mb-1">Cover Image</label>
+
+              <!-- Preview -->
+              <div v-if="form.cover_image" class="mb-2 relative w-full overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
+                <img :src="form.cover_image" alt="Cover preview" class="w-full h-auto object-contain">
+                <button
+                  type="button"
+                  @click="form.cover_image = ''"
+                  class="absolute right-2 top-2 rounded-full bg-rose-500 p-1 text-white shadow hover:bg-rose-600"
+                >
+                  <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+              </div>
+
+              <!-- Upload area -->
+              <div
+                v-if="!form.cover_image"
+                class="relative flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 px-4 py-8 transition hover:border-indigo-400 hover:bg-indigo-50/30 cursor-pointer"
+                @click="$refs.coverInput.click()"
+                @dragover.prevent
+                @drop.prevent="handleDrop"
               >
+                <svg class="h-8 w-8 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                <p class="mt-2 text-sm font-medium text-slate-600">Klik atau drag & drop gambar</p>
+                <p class="mt-0.5 text-xs text-slate-400">JPG, PNG, WEBP — maks 2MB</p>
+                <span v-if="uploadingCover" class="mt-2 text-xs text-indigo-600 font-medium animate-pulse">Mengupload...</span>
+              </div>
+
+              <input
+                ref="coverInput"
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                class="hidden"
+                @change="handleCoverUpload"
+              >
+
+              <p v-if="uploadError" class="mt-1.5 text-xs text-rose-600">{{ uploadError }}</p>
             </div>
           </div>
         </section>
@@ -283,6 +313,45 @@ const availableTryouts = ref([]);
 const selectedTryoutIds = ref([]);
 const tryoutSearch = ref("");
 const tryoutTypeFilter = ref("all");
+
+// Cover image upload
+const uploadingCover = ref(false);
+const uploadError = ref("");
+
+async function uploadCoverImage(file) {
+  if (!file) return;
+  if (file.size > 2 * 1024 * 1024) {
+    uploadError.value = "Ukuran file maksimal 2MB.";
+    return;
+  }
+
+  uploadingCover.value = true;
+  uploadError.value = "";
+
+  const formData = new FormData();
+  formData.append("upload", file);
+
+  try {
+    const res = await api.post("/uploads/images", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    form.value.cover_image = res.data?.url || res.data?.default || "";
+  } catch (err) {
+    uploadError.value = err?.response?.data?.message || "Gagal mengupload gambar.";
+  } finally {
+    uploadingCover.value = false;
+  }
+}
+
+function handleCoverUpload(e) {
+  const file = e.target.files?.[0];
+  if (file) uploadCoverImage(file);
+}
+
+function handleDrop(e) {
+  const file = e.dataTransfer.files?.[0];
+  if (file) uploadCoverImage(file);
+}
 
 const filteredTryouts = computed(() => {
   return availableTryouts.value.filter((t) => {
