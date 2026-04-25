@@ -1,22 +1,11 @@
 <script setup lang="ts">
-import { useRoute, useRouter } from "vue-router";
-import { watch } from "vue";
+import { useRoute, useRouter } from "vue-router"
+import { watch } from "vue"
 
-import {
-  Home,
-  FileText,
-  Users,
-  Book,
-  Database,
-  Layers,
-  Zap,
-  Trophy,
-  Activity,
-  Package,
-} from "lucide-vue-next";
+import { Home, FileText, Users, Book, Database, Layers, Zap, Trophy, Activity, Package, Map } from "lucide-vue-next"
 
-const route = useRoute();
-const router = useRouter();
+const route = useRoute()
+const router = useRouter()
 
 const icons: any = {
   home: Home,
@@ -29,12 +18,14 @@ const icons: any = {
   trophy: Trophy,
   activity: Activity,
   package: Package,
-};
+  map: Map
+}
 
 const menus = [
   { name: "Dashboard", path: "/", icon: "home" },
   // { name: "Try Out SKD CPNS", path: "/tryoutskd", icon: "document" },
   { name: "Daftar Akun", path: "/accounts", icon: "users" },
+  { name: "Sebaran Lokasi", path: "/location-stats", icon: "map" },
   // { name: "Materi SKD", path: "/materiskd", icon: "book" },
   { name: "Bank Soal SKD", path: "/banksoal", icon: "database" },
   { name: "Buat Tryout", path: "/tryout-builder", icon: "layers" },
@@ -43,30 +34,26 @@ const menus = [
   { name: "Peringkat", path: "/peringkat", icon: "trophy" },
   { name: "User Aktif", path: "/progress-user", icon: "activity" },
   { name: "Rekapan Tryout", path: "/rekapan-tryout", icon: "document" },
-  { name: "Rekap Status Tryout", path: "/rekap-status-tryout", icon: "document" },
+  { name: "Rekap Status Tryout", path: "/rekap-status-tryout", icon: "document" }
   // { name: "Axios Test", path: "/axiostest", icon: "zap" },
-];
+]
 
 const props = defineProps({
-  isHidden: Boolean,
-});
+  isHidden: Boolean
+})
 
-const emit = defineEmits(["toggle"]);
-
+const emit = defineEmits(["toggle"])
 
 const logout = () => {
-  localStorage.removeItem("token");
-  router.push("/login");
-};
+  localStorage.removeItem("token")
+  router.push("/login")
+}
 </script>
 
 <template>
   <aside
     class="sidebar bg-white border-r border-slate-200 flex flex-col"
-    :class="[
-      isHidden ? 'w-0 -translate-x-full md:w-0' : 'w-72 translate-x-0',
-      'fixed md:static inset-y-0 left-0 z-50',
-    ]"
+    :class="[isHidden ? 'w-0 -translate-x-full md:w-0' : 'w-72 translate-x-0', 'fixed md:static inset-y-0 left-0 z-50']"
   >
     <!-- Logo -->
     <div class="p-5 border-b border-slate-100 flex items-center gap-3">

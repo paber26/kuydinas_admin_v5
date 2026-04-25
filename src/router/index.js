@@ -1,184 +1,189 @@
-import { createRouter, createWebHistory } from "vue-router";
+import { createRouter, createWebHistory } from "vue-router"
 
-import Dashboard from "../components/Dashboard.vue";
-import Tryoutskd from "../components/Tryout/Tryoutskd.vue";
-import Tryoutskdlihat from "../components/Tryout/Tryoutskdlihat.vue";
-import Tryoutskdedit from "../components/Tryout/Tryoutskdedit.vue";
-import BankSoal from "../components/BankSoal/BankSoal.vue";
-import BankSoalCreate from "../components/BankSoal/BankSoalCreate.vue";
-import TryoutBuilder from "../components/Tryout/TryoutBuilder.vue";
-import TryoutCreate from "../components/Tryout/TryoutCreate.vue";
-import TryoutManage from "../components/Tryout/TryoutManage.vue";
-import Login from "../components/Auth/Login.vue";
-import GoogleCallback from "../components/Auth/GoogleCallback.vue";
-import { clearAuthSession, redirectToUserApp } from "../utils/auth";
-import TopupPackages from "../components/Topup/TopupPackages.vue";
-import Accounts from "../components/Users/Accounts.vue";
-import Peringkat from "../components/Peringkat.vue";
-import ProgressUser from "../components/ProgressUser.vue";
-import RekapanTryout from "../components/RekapanTryout.vue";
-import RekapStatusTryout from "../components/RekapStatusTryout.vue";
-import DetailPesertaTryout from "../components/DetailPesertaTryout.vue";
+import Dashboard from "../components/Dashboard.vue"
+import Tryoutskd from "../components/Tryout/Tryoutskd.vue"
+import Tryoutskdlihat from "../components/Tryout/Tryoutskdlihat.vue"
+import Tryoutskdedit from "../components/Tryout/Tryoutskdedit.vue"
+import BankSoal from "../components/BankSoal/BankSoal.vue"
+import BankSoalCreate from "../components/BankSoal/BankSoalCreate.vue"
+import TryoutBuilder from "../components/Tryout/TryoutBuilder.vue"
+import TryoutCreate from "../components/Tryout/TryoutCreate.vue"
+import TryoutManage from "../components/Tryout/TryoutManage.vue"
+import Login from "../components/Auth/Login.vue"
+import GoogleCallback from "../components/Auth/GoogleCallback.vue"
+import { clearAuthSession, redirectToUserApp } from "../utils/auth"
+import TopupPackages from "../components/Topup/TopupPackages.vue"
+import Accounts from "../components/Users/Accounts.vue"
+import Peringkat from "../components/Peringkat.vue"
+import ProgressUser from "../components/ProgressUser.vue"
+import RekapanTryout from "../components/RekapanTryout.vue"
+import RekapStatusTryout from "../components/RekapStatusTryout.vue"
+import DetailPesertaTryout from "../components/DetailPesertaTryout.vue"
 
 const routes = [
   {
     path: "/login",
     component: Login,
-    meta: { authPage: true, guestOnly: true },
+    meta: { authPage: true, guestOnly: true }
   },
   {
     path: "/auth/google/callback",
     component: GoogleCallback,
-    meta: { authPage: true, guestOnly: true },
+    meta: { authPage: true, guestOnly: true }
   },
   {
     path: "/auth/google/callback",
     name: "AdminGoogleCallback",
-    component: () => import("../views/auth/GoogleCallback.vue"),
+    component: () => import("../views/auth/GoogleCallback.vue")
   },
   {
     path: "/",
     component: Dashboard,
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true }
   },
   {
     path: "/banksoal",
     component: BankSoal,
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true }
   },
   {
     path: "/banksoal/create",
     component: BankSoalCreate,
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true }
   },
   {
     path: "/tryoutskd",
     component: Tryoutskd,
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true }
   },
   {
     path: "/tryout-builder",
     component: TryoutBuilder,
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true }
   },
   {
     path: "/tryout-builder/create",
     component: TryoutCreate,
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true }
   },
   {
     path: "/tryout-builder/:id",
     component: () => import("../components/Tryout/TryoutDetail.vue"),
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true }
   },
   {
     path: "/tryout-builder/:id/manage",
     component: TryoutManage,
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true }
   },
   {
     path: "/topup-packages",
     component: TopupPackages,
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true }
   },
   {
     path: "/accounts",
     component: Accounts,
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true }
   },
   {
     path: "/peringkat",
     component: Peringkat,
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true }
   },
   {
     path: "/progress-user",
     component: ProgressUser,
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true }
   },
   {
     path: "/rekapan-tryout",
     component: RekapanTryout,
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true }
   },
   {
     path: "/rekap-status-tryout",
     component: RekapStatusTryout,
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true }
   },
   {
     path: "/rekap-status-tryout/:id/peserta",
     component: DetailPesertaTryout,
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true }
   },
   {
     path: "/pendaftar-belum-mulai",
     component: RekapanTryout,
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true }
   },
   {
     path: "/tryoutskd/lihat/:eid",
     component: Tryoutskdlihat,
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true }
   },
   {
     path: "/tryoutskd/edit/:eid",
     component: Tryoutskdedit,
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true }
   },
   {
     path: "/bundles",
     component: () => import("../components/Bundle/BundleList.vue"),
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true }
   },
   {
     path: "/bundles/create",
     component: () => import("../components/Bundle/BundleForm.vue"),
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true }
   },
   {
     path: "/bundles/:id/edit",
     component: () => import("../components/Bundle/BundleForm.vue"),
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true }
   },
   {
     path: "/bundles/:id",
     component: () => import("../components/Bundle/BundleDetail.vue"),
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true }
   },
-];
+  {
+    path: "/location-stats",
+    component: () => import("../components/Users/LocationStats.vue"),
+    meta: { requiresAuth: true }
+  }
+]
 
 const router = createRouter({
   history: createWebHistory(),
-  routes,
-});
+  routes
+})
 
 router.beforeEach((to, from, next) => {
-  const token = localStorage.getItem("token");
-  const role = localStorage.getItem("role");
+  const token = localStorage.getItem("token")
+  const role = localStorage.getItem("role")
 
   if (token && role && role !== "admin") {
-    clearAuthSession();
-    redirectToUserApp("/login");
-    return next(false);
+    clearAuthSession()
+    redirectToUserApp("/login")
+    return next(false)
   }
 
   // jika belum login
   if (to.meta.requiresAuth && !token) {
-    return next("/login");
+    return next("/login")
   }
 
   // jika sudah login tapi buka auth page
   if (to.meta.guestOnly && token) {
-    return next("/");
+    return next("/")
   }
 
   // jika halaman admin tapi bukan admin
   if (to.meta.requiresAuth && token && role !== "admin") {
-    return next("/login");
+    return next("/login")
   }
 
-  next();
-});
+  next()
+})
 
-export default router;
+export default router
