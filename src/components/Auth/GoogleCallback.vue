@@ -13,10 +13,21 @@ const router = useRouter();
 
 const loadingMessage = ref("Memproses login Google...");
 const error = ref("");
+const ADMIN_ROLE = "admin";
+
+const normalizeRole = (value) =>
+  typeof value === "string" ? value.trim().toLowerCase() : "";
+
+const redirectToUserLogin = () => {
+  clearAuthSession();
+  loadingMessage.value = "Mengalihkan ke aplikasi user...";
+  redirectToUserApp("/login");
+};
 
 onMounted(async () => {
   const params = new URLSearchParams(window.location.search);
   const { token, role, user, error: authError } = getGoogleCallbackSession(params);
+  const initialRole = normalizeRole(role || user?.role);
 
   if (authError) {
     clearAuthSession();
@@ -30,42 +41,44 @@ onMounted(async () => {
     return;
   }
 
-  if (role !== "admin") {
-    clearAuthSession();
-    loadingMessage.value = "Mengalihkan ke aplikasi user...";
-    redirectToUserApp("/login");
-    return;
-  }
-
-  saveAuthSession({ token, role, user });
   loadingMessage.value = "Menyiapkan sesi admin...";
+  saveAuthSession({ token, role: initialRole || ADMIN_ROLE, user });
 
   try {
     const confirmedUser = await fetchAdminProfile(token);
-    const confirmedRole = confirmedUser.role || role || user?.role;
+    const confirmedRole = normalizeRole(confirmedUser?.role || initialRole);
 
-    if (confirmedRole && confirmedRole !== "admin") {
-      clearAuthSession();
-      loadingMessage.value = "Mengalihkan ke aplikasi user...";
-      redirectToUserApp("/login");
+    if (confirmedRole && confirmedRole !== ADMIN_ROLE) {
+      redirectToUserLogin();
       return;
     }
 
     saveAuthSession({
       token,
-      role: confirmedRole,
+      role: confirmedRole || ADMIN_ROLE,
       user: confirmedUser || user,
     });
 
     await router.replace("/");
   } catch (err) {
-    if (!user) {
-      clearAuthSession();
-      error.value = err.message || "Sesi Google admin gagal diverifikasi.";
+    if (initialRole && initialRole !== ADMIN_ROLE) {
+      redirectToUserLogin();
       return;
     }
 
-    await router.replace("/");
+    if (user) {
+      saveAuthSession({
+        token,
+        role: initialRole || ADMIN_ROLE,
+        user,
+      });
+
+      await router.replace("/");
+      return;
+    }
+
+    clearAuthSession();
+    error.value = err.message || "Sesi Google admin gagal diverifikasi.";
   }
 });
 </script>

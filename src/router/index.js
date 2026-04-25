@@ -32,11 +32,6 @@ const routes = [
     meta: { authPage: true, guestOnly: true }
   },
   {
-    path: "/auth/google/callback",
-    name: "AdminGoogleCallback",
-    component: () => import("../views/auth/GoogleCallback.vue")
-  },
-  {
     path: "/",
     component: Dashboard,
     meta: { requiresAuth: true }
