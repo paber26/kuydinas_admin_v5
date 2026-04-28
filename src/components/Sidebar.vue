@@ -72,11 +72,19 @@ const logout = () => {
         v-for="menu in menus"
         :key="menu.path"
         :to="menu.path"
-        class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition"
-        active-class="bg-purple-100 text-purple-600"
+        class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-200 group"
+        :class="[
+          (menu.path === '/' ? route.path === '/' : route.path.startsWith(menu.path))
+            ? 'bg-purple-50 text-purple-600 font-semibold'
+            : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+        ]"
       >
         <!-- icon -->
-        <component :is="icons[menu.icon]" class="w-5 h-5" />
+        <component 
+          :is="icons[menu.icon]" 
+          class="w-5 h-5 transition-colors"
+          :class="(menu.path === '/' ? route.path === '/' : route.path.startsWith(menu.path)) ? 'text-purple-600' : 'text-slate-400 group-hover:text-slate-600'"
+        />
 
         <span>
           {{ menu.name }}

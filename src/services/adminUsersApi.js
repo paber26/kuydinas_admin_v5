@@ -12,4 +12,10 @@ export default {
   update(id, payload) {
     return api.patch(`/users/${id}`, payload);
   },
+  getDetail(id) {
+    return api.get(`/users/${id}`);
+  },
+  tryoutSummary(id) {
+    return api.get(`/users/${id}/tryout-summary`);
+  },
 };

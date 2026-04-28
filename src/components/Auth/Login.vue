@@ -49,7 +49,11 @@ const login = async () => {
 }
 
 const loginGoogle = () => {
-  window.location.href = buildAdminGoogleLoginUrl()
+  try {
+    window.location.href = buildAdminGoogleLoginUrl()
+  } catch (err) {
+    error.value = err.message || "Konfigurasi Google Login tidak ditemukan"
+  }
 }
 </script>
 

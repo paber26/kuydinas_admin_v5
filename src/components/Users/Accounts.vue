@@ -26,17 +26,32 @@
       />
 
       <select
-        v-model="isActive"
+        v-model="coinFilter"
         class="border rounded-md text-sm px-2 py-2 bg-white"
       >
-        <option value="">Semua</option>
-        <option value="1">Aktif</option>
-        <option value="0">Nonaktif</option>
+        <option value="">Semua Koin</option>
+        <option value="has_coin">Punya Koin (>0)</option>
+        <option value="no_coin">0 Koin</option>
       </select>
+
+      <div class="flex items-center gap-2 bg-slate-50 border rounded-lg px-2 py-1">
+        <span class="text-[10px] uppercase font-bold text-slate-400">Rentang:</span>
+        <input
+          v-model="startDate"
+          type="date"
+          class="bg-transparent border-none text-xs outline-none focus:ring-0"
+        />
+        <span class="text-slate-300">-</span>
+        <input
+          v-model="endDate"
+          type="date"
+          class="bg-transparent border-none text-xs outline-none focus:ring-0"
+        />
+      </div>
 
       <select
         v-model.number="perPage"
-        class="border rounded-md text-sm px-2 py-2 bg-white"
+        class="border rounded-md text-sm px-2 py-2 bg-white ml-auto"
       >
         <option :value="10">10</option>
         <option :value="20">20</option>
@@ -51,9 +66,9 @@
             <th class="px-4 py-3 text-left">ID</th>
             <th class="px-4 py-3 text-left">Nama</th>
             <th class="px-4 py-3 text-left">Email</th>
-            <th class="px-4 py-3 text-left">Coin Balance</th>
-            <th class="px-4 py-3 text-left">Status Aktif</th>
-            <th class="px-4 py-3 text-left">Aksi</th>
+            <th class="px-4 py-3 text-left">Jumlah Koin</th>
+            <th class="px-4 py-3 text-left">Tgl Pendaftaran</th>
+            <th class="px-4 py-3 text-left">Kelengkapan Profil</th>
           </tr>
         </thead>
 
@@ -64,36 +79,31 @@
             class="border-t hover:bg-slate-50"
           >
             <td class="px-4 py-3">{{ item.id }}</td>
-            <td class="px-4 py-3 font-medium">{{ item.name || "-" }}</td>
+            <td class="px-4 py-3 font-medium">
+              <div class="flex items-center gap-3">
+                <img
+                  :src="item.image || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(item.name) + '&background=random'"
+                  class="w-8 h-8 rounded-full object-cover border border-slate-100"
+                  alt="Avatar"
+                />
+                <router-link
+                  :to="'/accounts/' + item.id"
+                  class="text-blue-600 hover:underline"
+                >
+                  {{ item.name || "-" }}
+                </router-link>
+              </div>
+            </td>
             <td class="px-4 py-3">{{ item.email || "-" }}</td>
             <td class="px-4 py-3">{{ formatNumber(item.coin_balance) }}</td>
+            <td class="px-4 py-3">{{ formatDate(item.created_at) }}</td>
             <td class="px-4 py-3">
               <span
-                class="px-2 py-1 rounded-full text-xs"
-                :class="
-                  item.is_active
-                    ? 'bg-green-100 text-green-600'
-                    : 'bg-slate-100 text-slate-600'
-                "
+                class="px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-tight"
+                :class="isProfileComplete(item) ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'"
               >
-                {{ item.is_active ? "Aktif" : "Nonaktif" }}
+                {{ isProfileComplete(item) ? 'Lengkap' : 'Belum Lengkap' }}
               </span>
-            </td>
-            <td class="px-4 py-3">
-              <button
-                v-if="!item.is_active"
-                @click="toggleStatus(item, true)"
-                class="text-emerald-600 hover:underline text-xs mr-3"
-              >
-                Aktifkan
-              </button>
-              <button
-                v-else
-                @click="toggleStatus(item, false)"
-                class="text-red-600 hover:underline text-xs"
-              >
-                Nonaktifkan
-              </button>
             </td>
           </tr>
         </tbody>
@@ -148,7 +158,9 @@ const page = ref(1);
 const lastPage = ref(1);
 const perPage = ref(20);
 const q = ref("");
-const isActive = ref("");
+const coinFilter = ref("");
+const startDate = ref("");
+const endDate = ref("");
 
 const showToast = ref(false);
 const toastMessage = ref("");
@@ -167,6 +179,24 @@ function formatNumber(val) {
   } catch {
     return String(val ?? 0);
   }
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return "-";
+  try {
+    const d = new Date(dateStr);
+    return d.toLocaleDateString("id-ID", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+  } catch {
+    return dateStr;
+  }
+}
+
+function isProfileComplete(user) {
+  return !!(user.whatsapp && user.province_name && user.regency_name);
 }
 
 function readPaginated(res) {
@@ -200,7 +230,9 @@ async function fetchList() {
   try {
     const params = { page: page.value, per_page: perPage.value };
     if (q.value) params.q = q.value;
-    if (isActive.value !== "") params.is_active = isActive.value;
+    if (coinFilter.value !== "") params.coin_filter = coinFilter.value;
+    if (startDate.value) params.start_date = startDate.value;
+    if (endDate.value) params.end_date = endDate.value;
 
     const res = await adminUsersApi.list(params);
     const parsed = readPaginated(res);
@@ -226,28 +258,6 @@ async function fetchList() {
   }
 }
 
-async function toggleStatus(item, toActive) {
-  const ok = confirm(toActive ? "Aktifkan akun ini?" : "Nonaktifkan akun ini?");
-  if (!ok) return;
-  try {
-    await adminUsersApi.update(item.id, { is_active: toActive });
-    showNotification("Status akun diperbarui");
-    item.is_active = toActive;
-  } catch (error) {
-    const status = error?.response?.status;
-    if (status === 401 || status === 403) {
-      localStorage.removeItem("token");
-      localStorage.removeItem("role");
-      window.location.href = "/login";
-      return;
-    }
-    const msg =
-      error?.response?.data?.message ||
-      error?.response?.data?.error ||
-      "Gagal memperbarui status";
-    showNotification(msg, "error");
-  }
-}
 
 function nextPage() {
   if (page.value < lastPage.value) {
@@ -269,7 +279,15 @@ const runSearch = debounce(() => {
 }, 400);
 
 watch(q, runSearch);
-watch(isActive, () => {
+watch(coinFilter, () => {
+  page.value = 1;
+  fetchList();
+});
+watch(startDate, () => {
+  page.value = 1;
+  fetchList();
+});
+watch(endDate, () => {
   page.value = 1;
   fetchList();
 });

@@ -120,6 +120,10 @@ export const redirectToUserApp = (path = "/login") => {
 }
 
 export const buildAdminGoogleLoginUrl = () => {
+  if (!ADMIN_AUTH_API_BASE_URL) {
+    throw new Error("VITE_ADMIN_API_BASE_URL belum dikonfigurasi di file .env")
+  }
+
   const loginUrl = new URL(`${ADMIN_AUTH_API_BASE_URL}/google/redirect`)
 
   if (ADMIN_APP_URL) {
